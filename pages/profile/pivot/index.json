@@ -1,4 +1,5 @@
 {
   "navigationBarTitleText": "转向判据",
+  "enablePullDownRefresh": true,
   "usingComponents": {}
 }

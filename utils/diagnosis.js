@@ -1,6 +1,9 @@
 // utils/diagnosis.js - 诊断算法
 
-const { DIM_KEYS, DIM_CORRELATION, FACTOR_KEYS } = require('./constants');
+const { DIMENSIONS, DIM_KEYS, DIM_CORRELATION, FACTOR_KEYS } = require('./constants');
+
+// 维度 key → 中文名（兜底返回 key 本身）
+const dimName = (key) => (DIMENSIONS[key] && DIMENSIONS[key].name) || key;
 
 // 崩溃点：分数<=2 或连续两周下降
 function findCollapsePoints(current, previous) {
@@ -106,7 +109,7 @@ function generateInsights(current, previous) {
 
   const collapses = findCollapsePoints(current, previous);
   if (collapses.length > 0) {
-    const names = collapses.map(c => c.key).join('、');
+    const names = collapses.map(c => dimName(c.key)).join('、');
     insights.push({
       type: 'danger',
       title: '崩溃点提醒',
@@ -121,7 +124,7 @@ function generateInsights(current, previous) {
     insights.push({
       type: 'info',
       title: '杠杆点',
-      text: '改善「' + leverage.key + '」对整体提升效应最大'
+      text: '改善「' + dimName(leverage.key) + '」对整体提升效应最大'
     });
   }
 
@@ -130,7 +133,7 @@ function generateInsights(current, previous) {
     insights.push({
       type: 'warning',
       title: '失衡点',
-      text: imbalances[0].key + '过强（' + imbalances[0].score + '分），可能压垮其他维度'
+      text: dimName(imbalances[0].key) + '过强（' + imbalances[0].score + '分），可能压垮其他维度'
     });
   }
 

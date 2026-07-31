@@ -42,16 +42,21 @@ const RESOURCE_METRICS = {
 // L1-L4 层级
 const LEVEL_KEYS = ['L1', 'L2', 'L3', 'L4'];
 
-// 资源健康判定阈值
-const HEALTH_THRESHOLDS = {
-  money: { green: [6, 999], yellow: [3, 5.9], red: [0, 2.9] },
-  time: { green: [4, 999], yellow: [2, 3.9], red: [0, 1.9] },
-  health: { green: [4, 999], yellow: [2, 3.9], red: [0, 1.9] },
-  relationship: { green: [3, 999], yellow: [1, 2], red: [0, 0.9] },
-  capability: { green: [4, 999], yellow: [2, 3.9], red: [0, 1.9] },
-  info: { green: [4, 999], yellow: [2, 3.9], red: [0, 1.9] },
-  psychology: { green: [4, 999], yellow: [2, 3.9], red: [0, 1.9] }
-};
+// 金钱资源指标独立归一化（量纲不同，不能混用同一公式）
+function _normalizeMoneyMetric(metricKey, num) {
+  switch (metricKey) {
+    case 'savings':  // 储蓄（月支出倍数），6个月=满分
+      return Math.max(0, Math.min(5, (num / 6) * 5));
+    case 'income':   // 月收入（元），15000=满分
+      return Math.max(0, Math.min(5, (num / 15000) * 5));
+    case 'expense':  // 月支出（元），越低越好：≤3000=满分，≥15000=零分
+      if (num <= 3000) return 5;
+      if (num >= 15000) return 0;
+      return 5 - ((num - 3000) / (15000 - 3000)) * 5;
+    default:
+      return Math.max(0, Math.min(5, num));
+  }
+}
 
 function getHealthStatus(resourceKey, metrics) {
   const metricDefs = RESOURCE_METRICS[resourceKey] || [];
@@ -65,11 +70,9 @@ function getHealthStatus(resourceKey, metrics) {
     if (val !== undefined && val !== null && val !== '') {
       const num = parseFloat(val);
       if (!isNaN(num)) {
-        // 归一化到 0-5 分（粗略映射）
+        // 归一化到 0-5 分
         if (resourceKey === 'money') {
-          totalScore += Math.min(5, num / 3);
-        } else if (resourceKey === 'time') {
-          totalScore += Math.min(5, num);
+          totalScore += _normalizeMoneyMetric(m.key, num);
         } else {
           totalScore += Math.min(5, num);
         }

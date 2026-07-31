@@ -34,8 +34,9 @@ Page({
       prevScores[key] = null;
     });
 
+    const currentWeekId = db.getWeekId(new Date());
     const latest = db.weekly.getLatest();
-    if (latest) {
+    if (latest && latest.id === currentWeekId) {
       constants.DIM_KEYS.forEach(key => {
         if (latest[key] !== undefined && latest[key] !== null) {
           scores[key] = latest[key];
@@ -43,6 +44,9 @@ Page({
       });
       if (latest.energyText) this.setData({ energyText: latest.energyText });
       if (latest.drainText) this.setData({ drainText: latest.drainText });
+    } else {
+      // 非本周记录：不回填，使用默认分；清空残留文案
+      this.setData({ energyText: '', drainText: '' });
     }
 
     const previous = db.weekly.getPrevious();

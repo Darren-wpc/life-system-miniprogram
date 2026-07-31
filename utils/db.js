@@ -18,6 +18,21 @@ const STORAGE_KEYS = {
   INITIALIZED: 'ls_initialized'
 };
 
+// 列表存储最大保留条数（防止超 1MB 单 key / 10MB 总量限制）
+const MAX_RETENTION = {
+  WEEKLY_SCORES: 104,    // 2年
+  FACTOR_SCORES: 365,    // 1年
+  DAILY_FEEDBACK: 180,   // 半年
+  QUARTERLY_REVIEW: 40,  // 10年
+  NARRATIVE: 40,
+  PIVOT: 40
+};
+
+function _trimList(list, max) {
+  if (max && list.length > max) list.length = max; // newest-first，截掉尾部最旧
+  return list;
+}
+
 function _get(key) {
   try {
     return wx.getStorageSync(key);
@@ -78,6 +93,7 @@ const weeklyDB = {
     } else {
       list.unshift(record);
     }
+    _trimList(list, MAX_RETENTION.WEEKLY_SCORES);
     _set(STORAGE_KEYS.WEEKLY_SCORES, list);
     return record;
   },
@@ -117,6 +133,7 @@ const factorDB = {
     const idx = list.findIndex(r => r.id === record.id);
     if (idx >= 0) list[idx] = record;
     else list.unshift(record);
+    _trimList(list, MAX_RETENTION.FACTOR_SCORES);
     _set(STORAGE_KEYS.FACTOR_SCORES, list);
     return record;
   },
@@ -162,6 +179,7 @@ const dailyDB = {
     const idx = list.findIndex(r => r.id === record.id);
     if (idx >= 0) list[idx] = record;
     else list.unshift(record);
+    _trimList(list, MAX_RETENTION.DAILY_FEEDBACK);
     _set(STORAGE_KEYS.DAILY_FEEDBACK, list);
     return record;
   },
@@ -208,6 +226,7 @@ const quarterlyDB = {
     const idx = list.findIndex(r => r.id === record.id);
     if (idx >= 0) list[idx] = record;
     else list.unshift(record);
+    _trimList(list, MAX_RETENTION.QUARTERLY_REVIEW);
     _set(STORAGE_KEYS.QUARTERLY_REVIEW, list);
     return record;
   },
@@ -255,6 +274,7 @@ const narrativeDB = {
     const idx = list.findIndex(r => r.id === record.id);
     if (idx >= 0) list[idx] = record;
     else list.unshift(record);
+    _trimList(list, MAX_RETENTION.NARRATIVE);
     _set(STORAGE_KEYS.NARRATIVE, list);
     return record;
   },
@@ -282,6 +302,7 @@ const pivotDB = {
     const idx = list.findIndex(r => r.id === record.id);
     if (idx >= 0) list[idx] = record;
     else list.unshift(record);
+    _trimList(list, MAX_RETENTION.PIVOT);
     _set(STORAGE_KEYS.PIVOT, list);
     return record;
   },

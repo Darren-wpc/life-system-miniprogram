@@ -3,7 +3,7 @@
 <!-- 空状态引导 -->
 <view class="empty-state" wx:if="{{!hasData}}">
   <view class="empty-icon-wrap">
-    <canvas canvas-id="emptyRadar" class="empty-radar-canvas"></canvas>
+    <canvas canvas-id="emptyRadar" id="emptyRadar" class="empty-radar-canvas"></canvas>
   </view>
   <view class="empty-text">完成本周自评，生成你的健康度雷达图</view>
   <view class="btn-primary empty-btn" bindtap="goToWeeklyAssess">开始自评</view>
@@ -51,7 +51,7 @@
       </view>
     </view>
     <view class="radar-canvas-wrap">
-      <canvas canvas-id="radarChart" class="radar-canvas"
+      <canvas canvas-id="radarChart" id="radarChart" class="radar-canvas"
               bindtap="onRadarTap" bindlongpress="onRadarLongPress"></canvas>
     </view>
     <view class="radar-week-label">

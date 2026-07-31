@@ -1,4 +1,5 @@
 {
   "navigationBarTitleText": "叙事一致性",
+  "enablePullDownRefresh": true,
   "usingComponents": {}
 }
