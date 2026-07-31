@@ -1,0 +1,148 @@
+/* pages/toolkit/uncontrollable/index.wxss */
+
+/* 汇总统计 */
+.summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 48rpx;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.summary-num {
+  font-size: 48rpx;
+  font-weight: 700;
+}
+
+.summary-controllable .summary-num {
+  color: var(--success);
+}
+
+.summary-uncontrollable .summary-num {
+  color: var(--danger);
+}
+
+.summary-label {
+  font-size: 24rpx;
+  color: var(--muted);
+}
+
+.summary-divider {
+  width: 2rpx;
+  height: 64rpx;
+  background: var(--rule);
+}
+
+/* 输入区 */
+.input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.anxiety-input {
+  width: 100%;
+  height: 80rpx;
+  padding: 0 24rpx;
+  background: var(--bg);
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.input-placeholder {
+  color: var(--muted);
+  font-size: 26rpx;
+}
+
+.input-btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.add-btn {
+  padding: 16rpx 48rpx;
+  font-size: 28rpx;
+  min-height: 0;
+  line-height: 1.6;
+}
+
+/* 焦虑列表 */
+.anxiety-list {
+  margin-top: 8rpx;
+}
+
+.anxiety-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.anxiety-uncontrollable {
+  background: var(--danger-light);
+}
+
+.anxiety-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-right: 16rpx;
+  overflow: hidden;
+}
+
+.anxiety-text {
+  font-size: 28rpx;
+  color: var(--ink);
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+.anxiety-actions {
+  display: flex;
+  gap: 12rpx;
+}
+
+.type-toggle {
+  flex-shrink: 0;
+}
+
+.type-toggle:active {
+  opacity: 0.7;
+}
+
+.anxiety-delete {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.anxiety-delete:active {
+  opacity: 0.6;
+}
+
+.delete-icon {
+  font-size: 40rpx;
+  color: var(--danger);
+  line-height: 1;
+}

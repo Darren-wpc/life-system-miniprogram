@@ -1,0 +1,260 @@
+/* pages/feedback/daily/index.wxss */
+
+/* 顶部日期与连续打卡 */
+.daily-header {
+  display: flex;
+  align-items: center;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.date-text {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.streak-badge {
+  display: flex;
+  align-items: center;
+  background: var(--accent-light);
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+}
+
+.streak-icon {
+  font-size: 28rpx;
+  margin-right: 6rpx;
+}
+
+.streak-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* 季级复盘导航卡片 */
+.nav-card {
+  padding: 0;
+}
+
+.nav-card-inner {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 32rpx;
+}
+
+.nav-card-inner:active {
+  background: var(--bg);
+}
+
+.nav-card-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.nav-card-icon {
+  font-size: 40rpx;
+  margin-right: 20rpx;
+}
+
+.nav-card-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.nav-card-desc {
+  font-size: 22rpx;
+  color: var(--muted);
+  margin-top: 4rpx;
+}
+
+.nav-card-arrow {
+  font-size: 36rpx;
+  color: var(--muted);
+  margin-left: 12rpx;
+}
+
+/* 已完成卡片 */
+.done-card {
+  border-left: 6rpx solid var(--success);
+}
+
+.done-card-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.done-mood {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+}
+
+.done-check {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 12rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.done-text {
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.8;
+  word-break: break-all;
+}
+
+/* 输入卡片 */
+.input-card {
+  padding-bottom: 24rpx;
+}
+
+.input-question {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 20rpx;
+  line-height: 1.5;
+}
+
+.input-textarea {
+  width: 100%;
+  min-height: 160rpx;
+  padding: 20rpx;
+  background: var(--bg);
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.7;
+  box-sizing: border-box;
+}
+
+.textarea-placeholder {
+  color: var(--muted);
+  font-size: 26rpx;
+}
+
+/* 心情选择器 */
+.mood-section {
+  margin-top: 28rpx;
+}
+
+.mood-label {
+  font-size: 26rpx;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.mood-list {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mood-item {
+  width: 96rpx;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20rpx;
+  background: var(--bg);
+  border: 3rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.mood-item.mood-selected {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  transform: scale(1.08);
+}
+
+.mood-emoji {
+  font-size: 48rpx;
+}
+
+/* 保存按钮 */
+.save-btn-inline {
+  width: 100%;
+  margin-top: 28rpx;
+  padding: 24rpx 0;
+  font-size: 30rpx;
+  border-radius: 16rpx;
+}
+
+/* 时间线 */
+.timeline {
+  padding-left: 12rpx;
+}
+
+.timeline-item {
+  display: flex;
+  position: relative;
+  min-height: 80rpx;
+}
+
+.timeline-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 64rpx;
+  flex-shrink: 0;
+}
+
+.timeline-dot {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2rpx solid var(--rule);
+}
+
+.timeline-mood {
+  font-size: 32rpx;
+}
+
+.timeline-line {
+  width: 2rpx;
+  flex: 1;
+  min-height: 24rpx;
+  background: var(--rule);
+}
+
+.timeline-content {
+  flex: 1;
+  padding: 8rpx 0 32rpx 20rpx;
+}
+
+.timeline-date {
+  font-size: 22rpx;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.timeline-text {
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.6;
+  word-break: break-all;
+}

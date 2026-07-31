@@ -1,0 +1,221 @@
+/* pages/profile/narrative/index.wxss - 叙事一致性记录样式 */
+
+/* 季度标识 */
+.quarter-badge {
+  display: inline-block;
+  padding: 8rpx 24rpx;
+  background: var(--primary-light);
+  border-radius: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.quarter-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* 进度条（复用 bottomline 样式） */
+.progress-bar {
+  padding: 24rpx 32rpx;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.progress-label {
+  font-size: 26rpx;
+  color: var(--muted);
+}
+
+.progress-count {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.progress-track {
+  width: 100%;
+  height: 12rpx;
+  background: var(--bg);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+
+/* 问题卡片 */
+.question-card {
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.question-header {
+  margin-bottom: 16rpx;
+}
+
+.question-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.question-tag {
+  display: inline-block;
+  padding: 6rpx 20rpx;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 600;
+  border-radius: 12rpx;
+}
+
+.question-private {
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+}
+
+.question-private::before {
+  content: '';
+  display: inline-block;
+  width: 12rpx;
+  height: 12rpx;
+  background: var(--muted);
+  border-radius: 50%;
+  margin-right: 8rpx;
+}
+
+.question-text {
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.7;
+  margin-bottom: 20rpx;
+  font-weight: 500;
+}
+
+.question-input-area {
+  width: 100%;
+}
+
+.question-textarea {
+  width: 100%;
+  min-height: 160rpx;
+  padding: 20rpx;
+  background: var(--bg);
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.textarea-placeholder {
+  color: var(--muted);
+  font-size: 26rpx;
+}
+
+/* 只读模式 */
+.readonly-card {
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.readonly-content {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background: var(--bg);
+  border-radius: 12rpx;
+  min-height: 80rpx;
+}
+
+.readonly-text {
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.record-meta {
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 24rpx;
+}
+
+/* 保存区域 */
+.save-area {
+  padding: 16rpx 0 32rpx;
+}
+
+.save-btn {
+  width: 100%;
+  font-size: 32rpx;
+}
+
+/* 历史记录 */
+.history-section {
+  margin-top: 48rpx;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.history-toggle-text {
+  font-size: 24rpx;
+}
+
+.history-item {
+  padding: 28rpx 32rpx;
+  margin-bottom: 16rpx;
+}
+
+.history-item-header {
+  margin-bottom: 12rpx;
+}
+
+.history-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.history-quarter {
+  font-size: 28rpx;
+  color: var(--ink);
+}
+
+.history-date {
+  font-size: 22rpx;
+}
+
+.history-item-badges {
+  display: flex;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.history-item-preview {
+  padding-top: 12rpx;
+  border-top: 1rpx solid var(--rule);
+  font-size: 24rpx;
+  line-height: 1.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

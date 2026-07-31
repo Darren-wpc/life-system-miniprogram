@@ -1,0 +1,133 @@
+/* pages/toolkit/bottomline/index.wxss */
+
+/* 进度条 */
+.progress-bar {
+  padding: 24rpx 32rpx;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.progress-label {
+  font-size: 26rpx;
+  color: var(--muted);
+}
+
+.progress-count {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.progress-track {
+  width: 100%;
+  height: 12rpx;
+  background: var(--bg);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+
+/* 维度卡片 */
+.dim-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.dim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 28rpx 0;
+}
+
+.dim-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.dim-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.dim-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.dim-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.dim-desc {
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+/* 告警指示器 */
+.alert-indicator {
+  flex-shrink: 0;
+  padding: 12rpx;
+  margin-left: 16rpx;
+}
+
+.alert-dot {
+  display: block;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+}
+
+.alert-active .alert-dot {
+  background: var(--danger);
+  box-shadow: 0 0 8rpx rgba(239, 68, 68, 0.5);
+}
+
+.alert-empty .alert-dot {
+  background: var(--rule);
+}
+
+/* 输入区 */
+.dim-input-area {
+  padding: 20rpx 28rpx 28rpx;
+}
+
+.input-label {
+  display: block;
+  font-size: 24rpx;
+  margin-bottom: 12rpx;
+}
+
+.dim-input {
+  width: 100%;
+  height: 72rpx;
+  padding: 0 20rpx;
+  background: var(--bg);
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.input-placeholder {
+  color: var(--muted);
+  font-size: 26rpx;
+}

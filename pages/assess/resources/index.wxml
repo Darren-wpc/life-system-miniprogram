@@ -1,0 +1,124 @@
+<!--pages/assess/resources/index.wxml-->
+<view class="page-container">
+
+  <!-- 资源健康总览 -->
+  <view class="summary-card card">
+    <view class="summary-title">资源健康总览</view>
+    <view class="summary-dots">
+      <view class="summary-item">
+        <text class="status-dot green"></text>
+        <text class="summary-count green">{{healthSummary.green}}</text>
+        <text class="summary-label">健康</text>
+      </view>
+      <view class="summary-item">
+        <text class="status-dot yellow"></text>
+        <text class="summary-count yellow">{{healthSummary.yellow}}</text>
+        <text class="summary-label">关注</text>
+      </view>
+      <view class="summary-item">
+        <text class="status-dot red"></text>
+        <text class="summary-count red">{{healthSummary.red}}</text>
+        <text class="summary-label">告警</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 七类资源卡片 -->
+  <view class="resource-card card" wx:for="{{resources}}" wx:key="key">
+
+    <!-- 卡片头部 -->
+    <view class="res-header" bindtap="toggleExpand" data-key="{{item.key}}">
+      <view class="res-left">
+        <text class="res-icon">{{item.icon}}</text>
+        <text class="res-name">{{item.name}}</text>
+        <text class="status-dot {{item.status || 'yellow'}}"></text>
+      </view>
+      <text class="res-toggle">{{expandedKeys[item.key] ? '收起' : '展开'}}</text>
+    </view>
+
+    <!-- 展开内容 -->
+    <view class="res-body" wx:if="{{expandedKeys[item.key]}}">
+
+      <!-- 核心指标输入 -->
+      <view class="metric-list" wx:if="{{item.metrics.length > 0 && item.key !== 'relationship'}}">
+        <view class="metric-item" wx:for="{{item.metrics}}" wx:for-item="metric" wx:key="key">
+          <text class="metric-name">{{metric.name}}</text>
+          <input
+            class="metric-input"
+            type="text"
+            placeholder="{{metric.placeholder}}"
+            placeholder-class="input-placeholder"
+            value="{{metricsData[item.key][metric.key]}}"
+            data-resource-key="{{item.key}}"
+            data-metric-key="{{metric.key}}"
+            bindinput="onMetricInput"
+          />
+        </view>
+      </view>
+
+      <!-- 关系资源特殊处理 -->
+      <block wx:if="{{item.key === 'relationship'}}">
+        <view class="rel-section">
+          <view class="rel-summary">
+            <text class="rel-summary-text text-muted">记录你各层级关系连接情况</text>
+          </view>
+
+          <!-- L1-L4 层级 -->
+          <view class="rel-level-card" wx:for="{{['L1', 'L2', 'L3', 'L4']}}" wx:for-item="level" wx:key="*this">
+            <view class="rel-level-header">
+              <view class="rel-level-left">
+                <text class="rel-level-tag badge {{relLevels[level] && relLevels[level].names && relLevels[level].names.length > 0 ? 'badge-green' : 'badge-yellow'}}">
+                  {{level}}
+                </text>
+                <view class="rel-level-info">
+                  <text class="rel-level-name">{{level === 'L1' ? '凌晨3点' : level === 'L2' ? '重大决策' : level === 'L3' ? '真话伙伴' : '弱连接'}}</text>
+                  <text class="rel-level-desc text-muted">
+                    {{level === 'L1' ? '紧急时能立刻接电话/上门' : level === 'L2' ? '做大决定时愿意先问的人' : level === 'L3' ? '能告诉你"你这次是错的"的人' : '行业内能介绍机会的人'}}
+                  </text>
+                </view>
+              </view>
+              <view class="rel-count">
+                <text class="rel-count-value">{{relLevels[level] && relLevels[level].names ? relLevels[level].names.length : 0}}</text>
+                <text class="rel-count-range text-muted">
+                  /{{level === 'L1' ? '1-3' : level === 'L2' ? '2-5' : level === 'L3' ? '3-8' : '30-100'}}人
+                </text>
+              </view>
+            </view>
+
+            <!-- 名单输入 -->
+            <view class="rel-names" wx:if="{{relLevels[level] && relLevels[level].names}}">
+              <view class="rel-name-row" wx:for="{{relLevels[level].names}}" wx:for-item="name" wx:for-index="idx" wx:key="idx">
+                <input
+                  class="rel-name-input"
+                  type="text"
+                  placeholder="姓名"
+                  placeholder-class="input-placeholder"
+                  value="{{name}}"
+                  data-level="{{level}}"
+                  data-index="{{idx}}"
+                  bindinput="onRelNameInput"
+                />
+                <view class="rel-remove" bindtap="removeRelItem" data-level="{{level}}" data-index="{{idx}}">
+                  <text class="rel-remove-icon">×</text>
+                </view>
+              </view>
+            </view>
+
+            <view class="rel-add-btn" bindtap="addRelItem" data-level="{{level}}">
+              <text class="rel-add-icon">+</text>
+              <text class="rel-add-text">添加{{level === 'L1' ? '凌晨3点' : level === 'L2' ? '重大决策' : level === 'L3' ? '真话伙伴' : '弱连接'}}关系人</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-area">
+    <button class="btn-primary save-btn" bindtap="onSave" loading="{{saving}}">
+      保存资源盘点
+    </button>
+  </view>
+
+</view>

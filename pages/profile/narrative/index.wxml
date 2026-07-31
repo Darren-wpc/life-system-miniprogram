@@ -1,0 +1,114 @@
+<!--pages/profile/narrative/index.wxml - 叙事一致性记录-->
+<view class="page-container">
+
+  <!-- 季度标识 -->
+  <view class="quarter-badge">
+    <text class="quarter-text">{{currentQuarter}} 季度记录</text>
+  </view>
+
+  <!-- 本季度无记录 —— 编辑模式 -->
+  <block wx:if="{{!hasRecord}}">
+    <view class="callout callout-info">
+      <text>每个季度回答一次这三个问题，审视你的人生叙事是否自洽。</text>
+    </view>
+
+    <!-- 完成进度 -->
+    <view class="progress-bar card">
+      <view class="progress-info">
+        <text class="progress-label">已回答</text>
+        <text class="progress-count">{{filledCount}}/{{questions.length}}</text>
+      </view>
+      <view class="progress-track">
+        <view class="progress-fill" style="width: {{filledCount / questions.length * 100}}%"></view>
+      </view>
+    </view>
+
+    <!-- 三个问题卡片 -->
+    <view class="question-card card" wx:for="{{questions}}" wx:key="key">
+      <view class="question-header">
+        <view class="question-label-row">
+          <text class="question-tag">{{item.label}}</text>
+          <text class="question-private text-muted">仅你自己可见</text>
+        </view>
+      </view>
+      <view class="question-text">
+        <text>{{item.text}}</text>
+      </view>
+      <view class="question-input-area">
+        <textarea
+          class="question-textarea"
+          placeholder="写下你的真实想法..."
+          placeholder-class="textarea-placeholder"
+          value="{{item.value}}"
+          data-key="{{item.key}}"
+          data-index="{{index}}"
+          bindinput="onQuestionInput"
+          maxlength="1000"
+          auto-height
+        />
+      </view>
+    </view>
+
+    <!-- 保存按钮 -->
+    <view class="save-area">
+      <button class="btn-primary save-btn" bindtap="onSave" disabled="{{saving}}">
+        {{saving ? '保存中...' : '保存本季度记录'}}
+      </button>
+    </view>
+  </block>
+
+  <!-- 本季度已有记录 —— 只读模式 -->
+  <block wx:if="{{hasRecord}}">
+    <view class="callout callout-info">
+      <text>本季度叙事记录已完成。以下为你当前的回答。</text>
+    </view>
+
+    <view class="readonly-card card" wx:for="{{questions}}" wx:key="key">
+      <view class="question-header">
+        <view class="question-label-row">
+          <text class="question-tag">{{item.label}}</text>
+          <text class="question-private text-muted">仅你自己可见</text>
+        </view>
+      </view>
+      <view class="question-text">
+        <text>{{item.text}}</text>
+      </view>
+      <view class="readonly-content">
+        <text class="readonly-text" wx:if="{{item.value}}">{{item.value}}</text>
+        <text class="text-muted" wx:else>未填写</text>
+      </view>
+    </view>
+
+    <view class="record-meta">
+      <text class="text-muted">记录于 {{latestRecord.date || ''}}</text>
+    </view>
+  </block>
+
+  <!-- 历史记录 -->
+  <view class="history-section" wx:if="{{historyList.length > 1}}">
+    <view class="history-header" bindtap="toggleHistory">
+      <text class="section-title">历史记录（{{historyList.length}}）</text>
+      <text class="history-toggle-text text-muted">{{historyExpanded ? '收起' : '展开'}}</text>
+    </view>
+
+    <block wx:if="{{historyExpanded}}">
+      <view class="history-item card" wx:for="{{historyList}}" wx:key="id" wx:for-item="record" wx:for-index="idx">
+        <view class="history-item-header flex-between">
+          <view class="history-item-left">
+            <text class="history-quarter text-bold">{{record.id}}</text>
+            <text class="history-date text-muted">{{record.date}}</text>
+          </view>
+          <view class="history-item-badges">
+            <text class="badge badge-green" wx:if="{{record.explanatory}}">解释力</text>
+            <text class="badge badge-green" wx:if="{{record.carrying}}">承载力</text>
+            <text class="badge badge-green" wx:if="{{record.honesty}}">诚实度</text>
+          </view>
+        </view>
+        <view class="history-item-preview" wx:if="{{record.explanatory || record.carrying || record.honesty}}">
+          <text class="text-muted">{{record.explanatory || record.carrying || record.honesty}}</text>
+        </view>
+      </view>
+    </block>
+  </view>
+
+</view>

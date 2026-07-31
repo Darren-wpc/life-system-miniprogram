@@ -1,0 +1,67 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/assess/weekly/index",
+    "pages/assess/factors/index",
+    "pages/assess/resources/index",
+    "pages/feedback/daily/index",
+    "pages/feedback/quarterly/index",
+    "pages/toolkit/notodo/index",
+    "pages/toolkit/notodo-detail/index",
+    "pages/toolkit/bottomline/index",
+    "pages/toolkit/exchange/index",
+    "pages/toolkit/interrupt/index",
+    "pages/toolkit/uncontrollable/index",
+    "pages/toolkit/restart/index",
+    "pages/profile/narrative/index",
+    "pages/profile/pivot/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#0d9488",
+    "navigationBarTitleText": "人生系统",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8fafc",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#64748b",
+    "selectedColor": "#0d9488",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/tab-home.png",
+        "selectedIconPath": "assets/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/assess/weekly/index",
+        "text": "评估",
+        "iconPath": "assets/tab-assess.png",
+        "selectedIconPath": "assets/tab-assess-active.png"
+      },
+      {
+        "pagePath": "pages/feedback/daily/index",
+        "text": "反馈",
+        "iconPath": "assets/tab-feedback.png",
+        "selectedIconPath": "assets/tab-feedback-active.png"
+      },
+      {
+        "pagePath": "pages/toolkit/notodo/index",
+        "text": "工具",
+        "iconPath": "assets/tab-toolkit.png",
+        "selectedIconPath": "assets/tab-toolkit-active.png"
+      },
+      {
+        "pagePath": "pages/profile/narrative/index",
+        "text": "我的",
+        "iconPath": "assets/tab-profile.png",
+        "selectedIconPath": "assets/tab-profile-active.png"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

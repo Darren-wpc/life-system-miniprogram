@@ -1,0 +1,203 @@
+/* pages/assess/factors/index.wxss */
+
+/* 圆形仪表盘 */
+.gauge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gauge-wrap {
+  margin: 16rpx 0;
+}
+
+.gauge-circle {
+  width: 280rpx;
+  height: 280rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.gauge-inner {
+  width: 210rpx;
+  height: 210rpx;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.gauge-value {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.2;
+}
+
+.gauge-label {
+  font-size: 22rpx;
+  color: var(--muted);
+  margin-top: 4rpx;
+}
+
+.gauge-desc {
+  font-size: 24rpx;
+  text-align: center;
+  margin-top: 16rpx;
+  line-height: 1.6;
+}
+
+/* 提醒框 */
+.callout-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.callout-text {
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+
+/* 提升预测 */
+.prediction-row {
+  display: flex;
+  align-items: center;
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12rpx;
+}
+
+.pred-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pred-label {
+  font-size: 22rpx;
+  margin-bottom: 4rpx;
+}
+
+.pred-value {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pred-highlight {
+  color: var(--success);
+}
+
+.pred-arrow {
+  font-size: 36rpx;
+  color: var(--muted);
+  margin: 0 24rpx;
+}
+
+.pred-badge {
+  margin-left: auto;
+}
+
+.pred-multiplier {
+  display: inline-block;
+  padding: 6rpx 20rpx;
+  background: var(--success);
+  color: #fff;
+  font-size: 26rpx;
+  font-weight: 700;
+  border-radius: 20rpx;
+}
+
+/* 因子卡片 */
+.factor-item {
+  padding: 8rpx 0;
+}
+
+.factor-item + .factor-item {
+  border-top: 1rpx solid var(--rule);
+  padding-top: 24rpx;
+  margin-top: 24rpx;
+}
+
+.factor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.factor-left {
+  display: flex;
+  align-items: center;
+}
+
+.factor-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.factor-name.bottleneck {
+  color: var(--danger);
+}
+
+.factor-value-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.factor-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* 滑块 */
+.factor-slider {
+  margin: 16rpx 0 8rpx;
+}
+
+.factor-scale {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8rpx;
+}
+
+.scale-label {
+  font-size: 20rpx;
+  color: var(--muted);
+}
+
+/* 因子描述 */
+.factor-desc {
+  margin-top: 12rpx;
+  padding-left: 8rpx;
+}
+
+/* 保存区域 */
+.save-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: var(--surface);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  z-index: 10;
+}
+
+.save-btn {
+  width: 100%;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  padding: 24rpx 0;
+}

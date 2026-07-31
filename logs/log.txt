@@ -1,0 +1,146 @@
+正在编译代码
+Compile miniprogram
+Compile jSON files
+Compiling utils/diagnosis.js
+Compiling utils/diagnosis.js
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+getDevCodeByFileList-miniProgram
+Compiling utils/diagnosis.js
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+getDevCodeByFileList-miniProgram
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+getDevCodeByFileList-miniProgram
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+Compile app.json
+Compile ext.json
+Compile json files of 14 pages
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+Ignored by code analyzer: project.private.config.json
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+Ignored by code analyzer: project.private.config.json
+getDevCodeByFileList-miniProgram
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+getDevCodeByFileList-miniProgram
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+getDevCodeByFileList-miniProgram
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+Compile app.json
+Compile ext.json
+Compile json files of 14 pages
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+Ignored by code analyzer: project.private.config.json
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+Ignored by code analyzer: project.private.config.json
+getDevCodeByFileList-miniProgram
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+getDevCodeByFileList-miniProgram
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success
+getDevCodeByFileList-miniProgram
+Error: file: utils/diagnosis.js
+ unknown: Unexpected token (170:2)
+
+  168 |   calcOverallHealth,
+  169 |   getStatus
+> 170 | };</arg_value>
+      |   ^
+analyzing codes...
+ignoring files: project.private.config.json
+analyzing codes success

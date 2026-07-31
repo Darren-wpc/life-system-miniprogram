@@ -1,0 +1,48 @@
+<!--pages/toolkit/interrupt/index.wxml-->
+<view class="page-container">
+
+  <!-- 引导语 -->
+  <view class="callout callout-info">
+    <text>提前写好破功后怎么回来，反而最不容易塌。</text>
+  </view>
+
+  <!-- 完成进度 -->
+  <view class="progress-bar card">
+    <view class="progress-info">
+      <text class="progress-label">已填写脚本</text>
+      <text class="progress-count">{{filledCount}}/{{sections.length}}</text>
+    </view>
+    <view class="progress-track">
+      <view class="progress-fill" style="width: {{sections.length > 0 ? filledCount / sections.length * 100 : 0}}%"></view>
+    </view>
+  </view>
+
+  <!-- 三个恢复脚本 -->
+  <view class="script-card card" wx:for="{{sections}}" wx:key="key">
+    <view class="script-header">
+      <view class="script-badge badge {{filledKeys[item.key] ? 'badge-green' : 'badge-yellow'}}">
+        {{index === 0 ? '1天' : index === 1 ? '3天' : '1周'}}
+      </view>
+      <view class="script-info">
+        <text class="script-title">{{item.title}}</text>
+        <text class="script-desc text-muted">{{item.desc}}</text>
+      </view>
+    </view>
+
+    <textarea
+      class="script-textarea"
+      placeholder="写下你的恢复步骤..."
+      placeholder-class="input-placeholder"
+      value="{{form[item.key]}}"
+      data-key="{{item.key}}"
+      bindinput="onTextareaInput"
+      bindblur="onBlur"
+      maxlength="1000"
+      auto-height
+    />
+    <view class="textarea-footer">
+      <text class="text-muted" style="font-size: 22rpx;">{{form[item.key] ? form[item.key].length : 0}}/1000</text>
+    </view>
+  </view>
+
+</view>

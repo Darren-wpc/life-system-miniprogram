@@ -1,0 +1,281 @@
+/* pages/assess/resources/index.wxss */
+
+/* 健康总览 */
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 24rpx;
+}
+
+.summary-dots {
+  display: flex;
+  gap: 48rpx;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.summary-count {
+  font-size: 44rpx;
+  font-weight: 700;
+}
+
+.summary-count.green { color: var(--success); }
+.summary-count.yellow { color: var(--accent); }
+.summary-count.red { color: var(--danger); }
+
+.summary-label {
+  font-size: 22rpx;
+  color: var(--muted);
+}
+
+/* 资源卡片 */
+.resource-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.res-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  transition: background-color 0.2s;
+}
+
+.res-header:active {
+  background-color: var(--bg);
+}
+
+.res-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.res-icon {
+  font-size: 36rpx;
+}
+
+.res-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.res-toggle {
+  font-size: 24rpx;
+  color: var(--muted);
+}
+
+/* 展开内容 */
+.res-body {
+  padding: 0 32rpx 32rpx;
+  border-top: 1rpx solid var(--rule);
+}
+
+/* 指标列表 */
+.metric-list {
+  padding-top: 24rpx;
+}
+
+.metric-item {
+  margin-bottom: 20rpx;
+}
+
+.metric-item:last-child {
+  margin-bottom: 0;
+}
+
+.metric-name {
+  display: block;
+  font-size: 26rpx;
+  color: var(--muted);
+  margin-bottom: 8rpx;
+}
+
+.metric-input {
+  width: 100%;
+  height: 72rpx;
+  padding: 0 20rpx;
+  background: var(--bg);
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.input-placeholder {
+  color: var(--muted);
+  font-size: 26rpx;
+}
+
+/* 关系资源 */
+.rel-section {
+  padding-top: 16rpx;
+}
+
+.rel-summary {
+  margin-bottom: 20rpx;
+}
+
+.rel-summary-text {
+  font-size: 24rpx;
+}
+
+/* 关系层级卡片 */
+.rel-level-card {
+  background: var(--bg);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.rel-level-card:last-child {
+  margin-bottom: 0;
+}
+
+.rel-level-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.rel-level-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.rel-level-tag {
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.rel-level-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.rel-level-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.rel-level-desc {
+  font-size: 22rpx;
+  margin-top: 4rpx;
+}
+
+.rel-count {
+  display: flex;
+  align-items: baseline;
+  flex-shrink: 0;
+}
+
+.rel-count-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.rel-count-range {
+  font-size: 22rpx;
+  margin-left: 4rpx;
+}
+
+/* 关系人名单 */
+.rel-names {
+  margin-bottom: 12rpx;
+}
+
+.rel-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.rel-name-input {
+  flex: 1;
+  height: 64rpx;
+  padding: 0 16rpx;
+  background: var(--surface);
+  border: 1rpx solid var(--rule);
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.rel-remove {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
+.rel-remove-icon {
+  font-size: 36rpx;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.rel-add-btn {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  margin-top: 8rpx;
+}
+
+.rel-add-btn:active {
+  opacity: 0.7;
+}
+
+.rel-add-icon {
+  font-size: 32rpx;
+  color: var(--primary);
+  margin-right: 8rpx;
+  font-weight: 700;
+}
+
+.rel-add-text {
+  font-size: 24rpx;
+  color: var(--primary);
+}
+
+/* 保存区域 */
+.save-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: var(--surface);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  z-index: 10;
+}
+
+.save-btn {
+  width: 100%;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  padding: 24rpx 0;
+}

@@ -1,0 +1,510 @@
+/* pages/index/index.wxss - 六维健康度仪表盘首页样式 */
+
+/* ===== 空状态 ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 80rpx 48rpx;
+}
+
+.empty-icon-wrap {
+  margin-bottom: 40rpx;
+}
+
+.empty-radar-canvas {
+  width: 300rpx;
+  height: 300rpx;
+}
+
+.empty-state .empty-text {
+  font-size: 30rpx;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.8;
+  margin-bottom: 48rpx;
+}
+
+.empty-btn {
+  min-width: 280rpx;
+}
+
+/* ===== 顶部 Header ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx 16rpx;
+}
+
+.header-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.header-date {
+  font-size: 26rpx;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* ===== 完成状态徽章 ===== */
+.status-badges {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 12rpx 32rpx 20rpx;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.badge-green {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.badge-gray {
+  background: #f1f5f9;
+  color: var(--muted);
+}
+
+.badge-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+}
+
+.dot-green {
+  background: var(--success);
+}
+
+.dot-gray {
+  background: #cbd5e1;
+}
+
+.streak-info {
+  margin-left: auto;
+}
+
+.streak-text {
+  font-size: 22rpx;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ===== 雷达图区 ===== */
+.radar-section {
+  padding: 28rpx 24rpx;
+}
+
+.radar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.radar-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.overall-score-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4rpx;
+}
+
+.overall-score {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.overall-score.green {
+  color: var(--success);
+}
+
+.overall-score.yellow {
+  color: var(--accent);
+}
+
+.overall-score.red {
+  color: var(--danger);
+}
+
+.overall-label {
+  font-size: 22rpx;
+  color: var(--muted);
+}
+
+.radar-canvas-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16rpx 0;
+}
+
+.radar-canvas {
+  width: 600rpx;
+  height: 600rpx;
+}
+
+.radar-week-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--rule);
+}
+
+.compare-btn {
+  font-size: 24rpx;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* ===== 维度卡片 ===== */
+.dim-cards {
+  padding: 0 32rpx;
+  margin-top: 8rpx;
+}
+
+.dim-card {
+  background: var(--surface);
+  border-radius: 20rpx;
+  padding: 24rpx 28rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.dim-card-active {
+  box-shadow: 0 4rpx 24rpx rgba(13, 148, 136, 0.15);
+  border-left: 6rpx solid var(--primary);
+}
+
+.dim-card-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+}
+
+.dim-icon {
+  font-size: 36rpx;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-light);
+  border-radius: 16rpx;
+}
+
+.dim-info {
+  flex: 1;
+}
+
+.dim-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.dim-desc {
+  font-size: 22rpx;
+  color: var(--muted);
+  display: block;
+}
+
+.dim-card-right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-left: 16rpx;
+}
+
+.dim-score-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 2rpx;
+}
+
+.dim-score {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.dim-score-max {
+  font-size: 22rpx;
+}
+
+.dim-trend {
+  font-size: 24rpx;
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.trend-up {
+  color: var(--success);
+  background: var(--success-light);
+}
+
+.trend-down {
+  color: var(--danger);
+  background: var(--danger-light);
+}
+
+.trend-flat {
+  color: var(--muted);
+  background: #f1f5f9;
+}
+
+/* 进度条 */
+.dim-progress-track {
+  height: 8rpx;
+  background: #f1f5f9;
+  border-radius: 4rpx;
+  margin-top: 16rpx;
+  overflow: hidden;
+}
+
+.dim-progress-bar {
+  height: 100%;
+  border-radius: 4rpx;
+  transition: width 0.6s ease;
+}
+
+.bar-green {
+  background: linear-gradient(90deg, var(--primary), var(--success));
+}
+
+.bar-yellow {
+  background: linear-gradient(90deg, var(--accent), #fbbf24);
+}
+
+.bar-red {
+  background: linear-gradient(90deg, #f87171, var(--danger));
+}
+
+/* ===== 洞察区 ===== */
+.insights-section {
+  padding: 16rpx 32rpx 0;
+  margin-top: 16rpx;
+}
+
+.insight-card {
+  margin-bottom: 16rpx;
+}
+
+.insight-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.insight-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+}
+
+.insight-dot.danger {
+  background: var(--danger);
+}
+
+.insight-dot.warning {
+  background: var(--accent);
+}
+
+.insight-dot.info {
+  background: var(--primary);
+}
+
+.insight-dot.success {
+  background: var(--success);
+}
+
+.insight-title {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.insight-text {
+  font-size: 26rpx;
+  line-height: 1.7;
+}
+
+/* ===== 快捷操作 ===== */
+.quick-actions {
+  margin: 16rpx 32rpx 32rpx;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24rpx;
+  margin-top: 16rpx;
+}
+
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.action-icon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-icon-assess {
+  background: linear-gradient(135deg, #ccfbf1, #99f6e4);
+}
+
+.action-icon-assess::after {
+  content: '';
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 4rpx solid var(--primary);
+  border-right-color: transparent;
+  border-top-color: transparent;
+  transform: rotate(45deg);
+}
+
+.action-icon-daily {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+
+.action-icon-daily::after {
+  content: '';
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 6rpx;
+  border: 3rpx solid var(--accent);
+}
+
+.action-icon-factors {
+  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+}
+
+.action-icon-factors::after {
+  content: '';
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  background: #6366f1;
+}
+
+.action-icon-resources {
+  background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+}
+
+.action-icon-resources::after {
+  content: '';
+  width: 36rpx;
+  height: 28rpx;
+  border-radius: 6rpx;
+  background: #ec4899;
+}
+
+.action-label {
+  font-size: 22rpx;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ===== 周对比弹窗 ===== */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-content {
+  width: 100%;
+  max-height: 70vh;
+  background: var(--surface);
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 32rpx;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid var(--rule);
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.modal-close {
+  font-size: 36rpx;
+  color: var(--muted);
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body {
+  padding: 8rpx 0;
+}
+
+.week-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: var(--ink);
+}
+
+.week-option-active {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 600;
+}

@@ -1,0 +1,80 @@
+<!--pages/toolkit/notodo-detail/index.wxml-->
+<view class="page-container">
+
+  <!-- 引导语 -->
+  <view class="callout callout-info">
+    <text>写下即使给钱也不愿做的事。这份清单是你的底线地图，帮你在诱惑面前不用现场纠结。</text>
+  </view>
+
+  <!-- 列表 -->
+  <view wx:if="{{items.length > 0}}">
+    <view class="section-title">不做清单 ({{items.length}})</view>
+
+    <view class="notodo-list">
+      <view class="notodo-card card" wx:for="{{items}}" wx:key="id">
+        <view class="notodo-body">
+          <text class="notodo-icon">✕</text>
+          <view class="notodo-content">
+            <text class="notodo-text">{{item.text}}</text>
+            <text class="notodo-reason text-muted" wx:if="{{item.reason}}">{{item.reason}}</text>
+          </view>
+        </view>
+        <view class="notodo-footer">
+          <text class="notodo-date text-muted">{{item.dateStr}}</text>
+          <view class="notodo-delete" bindtap="deleteItem" data-id="{{item.id}}">
+            <text class="delete-icon">×</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{items.length === 0 && !showAdd}}" class="empty-state">
+    <text class="empty-icon">⛔</text>
+    <text class="empty-text">还没有不做清单，写下你即使给钱也不愿做的事</text>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="add-trigger" wx:if="{{!showAdd}}" bindtap="toggleAdd">
+    <text class="add-trigger-icon">+</text>
+    <text class="add-trigger-text">添加不做事项</text>
+  </view>
+
+  <!-- 添加表单 -->
+  <view class="add-form card" wx:if="{{showAdd}}">
+    <view class="form-title">新增不做事项</view>
+
+    <view class="form-group">
+      <text class="form-label text-muted">即使给钱也不做：</text>
+      <input
+        class="form-input"
+        type="text"
+        placeholder="例如：为了KPI牺牲健康"
+        placeholder-class="input-placeholder"
+        value="{{inputText}}"
+        bindinput="onTextInput"
+        maxlength="100"
+      />
+    </view>
+
+    <view class="form-group">
+      <text class="form-label text-muted">为什么（可选）：</text>
+      <textarea
+        class="form-textarea"
+        placeholder="写下你的理由，以后翻看时提醒自己"
+        placeholder-class="input-placeholder"
+        value="{{inputReason}}"
+        bindinput="onReasonInput"
+        maxlength="200"
+        auto-height
+      />
+    </view>
+
+    <view class="form-actions">
+      <button class="btn-outline cancel-btn" bindtap="toggleAdd">取消</button>
+      <button class="btn-primary confirm-btn" bindtap="addItem" disabled="{{saving || !canSubmit}}">确认添加</button>
+    </view>
+  </view>
+
+</view>

@@ -1,0 +1,83 @@
+<!--pages/profile/pivot/index.wxml - 转向信号检测-->
+<view class="page-container">
+
+  <!-- 季度标识 -->
+  <view class="quarter-badge">
+    <text class="quarter-text">{{currentQuarter}} 季度检测</text>
+  </view>
+
+  <!-- 引导语 -->
+  <view class="callout callout-info">
+    <text>检查以下6个转向信号。勾选你当前正在经历的，系统会给出建议。</text>
+  </view>
+
+  <!-- 勾选计数 -->
+  <view class="signal-counter card">
+    <view class="counter-info">
+      <text class="counter-label">已勾选信号</text>
+      <text class="counter-number">{{checkedCount}}<text class="counter-total">/{{signals.length}}</text></text>
+    </view>
+    <view class="counter-track">
+      <view class="counter-fill" style="width: {{checkedCount / signals.length * 100}}%"></view>
+    </view>
+  </view>
+
+  <!-- 6个信号清单 -->
+  <view class="signal-list card" style="padding: 0; overflow: hidden;">
+    <view class="signal-item" wx:for="{{signals}}" wx:key="id" data-id="{{item.id}}" bindtap="onSignalToggle">
+      <view class="signal-check {{item.checked ? 'signal-checked' : ''}}">
+        <text class="check-icon" wx:if="{{item.checked}}">✓</text>
+      </view>
+      <view class="signal-content">
+        <text class="signal-text">{{item.text}}</text>
+        <view class="signal-auto-tag" wx:if="{{item.autoDetect}}">
+          <text class="auto-badge">可自动检测</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 推荐建议 -->
+  <view class="callout callout-{{recommendationLevel}}">
+    <text>{{recommendationText}}</text>
+  </view>
+
+  <!-- 转向准备清单（信号>=2时显示） -->
+  <block wx:if="{{showPrepList}}">
+    <view class="prep-section">
+      <view class="section-title">转向准备清单</view>
+      <text class="section-subtitle">如果真的要转向，逐项确认：</text>
+
+      <view class="prep-list card" style="padding: 0; overflow: hidden;">
+        <view class="prep-item" wx:for="{{prepList}}" wx:key="key" data-key="{{item.key}}" bindtap="onPrepToggle">
+          <view class="prep-check {{item.checked ? 'prep-checked' : ''}}">
+            <text class="prep-check-icon" wx:if="{{item.checked}}">✓</text>
+          </view>
+          <view class="prep-content">
+            <text class="prep-label">{{item.label}}</text>
+            <text class="prep-desc text-muted">{{item.text}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 准备清单结论 -->
+      <view class="prep-conclusion" wx:if="{{prepConclusion}}">
+        <view class="conclusion-card card conclusion-{{prepConclusionType}}">
+          <text class="conclusion-icon" wx:if="{{prepConclusionType === 'green'}}">●</text>
+          <text class="conclusion-icon" wx:elif="{{prepConclusionType === 'red'}}">●</text>
+          <text class="conclusion-icon" wx:else>●</text>
+          <text class="conclusion-text">{{prepConclusion}}</text>
+        </view>
+        <text class="prep-hint text-muted">已确认 {{prepCheckedCount}}/{{prepList.length}} 项</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 保存按钮 -->
+  <view class="save-area">
+    <button class="btn-primary save-btn" bindtap="onSave" disabled="{{saving}}">
+      {{saving ? '保存中...' : '保存检测结果'}}
+    </button>
+  </view>
+
+</view>

@@ -1,0 +1,99 @@
+<!--pages/assess/factors/index.wxml-->
+<view class="page-container">
+
+  <!-- 圆形仪表盘 -->
+  <view class="gauge-card card">
+    <view class="gauge-wrap">
+      <view class="gauge-circle" style="background: conic-gradient(var(--primary) {{productPercent}}%, var(--rule) {{productPercent}}%);">
+        <view class="gauge-inner">
+          <text class="gauge-value">{{productPercent}}%</text>
+          <text class="gauge-label">综合乘积</text>
+        </view>
+      </view>
+    </view>
+    <view class="gauge-desc text-muted">五个因子的乘积反映你当前行动系统的整体效能</view>
+  </view>
+
+  <!-- 瓶颈提醒 -->
+  <view class="callout callout-danger" wx:if="{{bottleneckKey && bottleneckValue < 0.3}}">
+    <view class="callout-title">瓶颈因子：{{bottleneckName}}</view>
+    <view class="callout-text">当前值 {{bottleneckValue}}，严重拖累整体效能</view>
+  </view>
+
+  <!-- 提升预测 -->
+  <view class="callout callout-warning" wx:if="{{prediction}}">
+    <view class="callout-title">提升预测</view>
+    <view class="callout-text">
+      将「{{prediction.factorName}}」从 {{prediction.currentValue}} 提升到 0.5
+    </view>
+    <view class="prediction-row">
+      <view class="pred-item">
+        <text class="pred-label text-muted">当前乘积</text>
+        <text class="pred-value">{{prediction.currentProduct}}</text>
+      </view>
+      <text class="pred-arrow">→</text>
+      <view class="pred-item">
+        <text class="pred-label text-muted">提升后</text>
+        <text class="pred-value pred-highlight">{{prediction.boostedProduct}}</text>
+      </view>
+      <view class="pred-badge">
+        <text class="pred-multiplier">x{{prediction.multiplier}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 五因子滑块 -->
+  <view class="section-title">五因子评分</view>
+
+  <view class="card" wx:for="{{factors}}" wx:key="key">
+    <view class="factor-item">
+      <!-- 因子头部 -->
+      <view class="factor-header">
+        <view class="factor-left">
+          <text
+            class="factor-name {{bottleneckKey === item.key ? 'bottleneck' : ''}}"
+          >{{item.name}}</text>
+          <text
+            class="badge {{bottleneckKey === item.key ? 'badge-red' : displayScores[item.key] >= 0.5 ? 'badge-green' : 'badge-yellow'}}"
+            wx:if="{{bottleneckKey === item.key}}"
+          >瓶颈</text>
+        </view>
+        <view class="factor-value-wrap">
+          <text class="factor-value {{bottleneckKey === item.key ? 'text-danger' : ''}}">{{displayScores[item.key]}}</text>
+        </view>
+      </view>
+
+      <!-- 滑块 -->
+      <view class="factor-slider">
+        <slider
+          min="0" max="1" step="0.1"
+          value="{{scores[item.key]}}"
+          activeColor="{{bottleneckKey === item.key ? 'var(--danger)' : 'var(--primary)'}}"
+          backgroundColor="var(--rule)"
+          block-size="24"
+          show-value="{{false}}"
+          data-key="{{item.key}}"
+          bindchange="onSliderChange"
+        />
+        <view class="factor-scale">
+          <text class="scale-label">0</text>
+          <text class="scale-label">0.5</text>
+          <text class="scale-label">1.0</text>
+        </view>
+      </view>
+
+      <!-- 因子描述 -->
+      <view class="factor-desc">
+        <text class="text-muted">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-area">
+    <button class="btn-primary save-btn" bindtap="onSave" loading="{{saving}}">
+      保存因子评分
+    </button>
+  </view>
+
+</view>

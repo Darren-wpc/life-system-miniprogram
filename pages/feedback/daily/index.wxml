@@ -1,0 +1,104 @@
+<!--pages/feedback/daily/index.wxml-->
+<view class="page-container">
+
+  <!-- 顶部日期与连续打卡 -->
+  <view class="daily-header card">
+    <view class="header-top">
+      <view class="date-info">
+        <text class="date-text">{{todayStr}}</text>
+      </view>
+      <view class="streak-badge" wx:if="{{streak > 0}}">
+        <text class="streak-icon">🔥</text>
+        <text class="streak-text">已连续 {{streak}} 天</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 导航入口：季级复盘 -->
+  <view class="card nav-card" bindtap="goQuarterly">
+    <view class="nav-card-inner">
+      <view class="nav-card-left">
+        <text class="nav-card-icon">📋</text>
+        <view class="nav-card-info">
+          <text class="nav-card-title">季级复盘</text>
+          <text class="nav-card-desc">季度结构化回顾</text>
+        </view>
+      </view>
+      <text class="nav-card-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 今日反馈区域 -->
+  <block wx:if="{{todayDone}}">
+    <!-- 已完成卡片 -->
+    <view class="section-title">今日记录</view>
+    <view class="card done-card">
+      <view class="done-card-top">
+        <text class="done-mood">{{todayRecord.moodEmoji}}</text>
+        <text class="done-check">已记录</text>
+      </view>
+      <view class="done-text">{{todayRecord.text}}</view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <!-- 输入卡片 -->
+    <view class="section-title">今日反馈</view>
+    <view class="card input-card">
+      <view class="input-question">今天哪件事让你有能量 / 让你掉电？</view>
+      <textarea
+        class="input-textarea"
+        placeholder="写下来，不评判..."
+        placeholder-class="textarea-placeholder"
+        value="{{inputText}}"
+        bindinput="onTextInput"
+        maxlength="500"
+        auto-height
+      />
+      <view class="mood-section">
+        <text class="mood-label">今天的心情</text>
+        <view class="mood-list">
+          <view
+            class="mood-item {{selectedMood === item ? 'mood-selected' : ''}}"
+            wx:for="{{moodEmojis}}"
+            wx:key="*this"
+            data-emoji="{{item}}"
+            bindtap="onMoodSelect"
+          >
+            <text class="mood-emoji">{{item}}</text>
+          </view>
+        </view>
+      </view>
+      <button class="btn-primary save-btn-inline" bindtap="onSave" loading="{{saving}}">
+        保存今日反馈
+      </button>
+    </view>
+  </block>
+
+  <!-- 历史时间线 -->
+  <view class="section-title mt-32" wx:if="{{historyList.length > 0}}">历史记录</view>
+
+  <view class="timeline" wx:if="{{historyList.length > 0}}">
+    <view class="timeline-item" wx:for="{{historyList}}" wx:key="id">
+      <!-- 时间线节点 -->
+      <view class="timeline-left">
+        <view class="timeline-dot">
+          <text class="timeline-mood">{{item.moodEmoji}}</text>
+        </view>
+        <view class="timeline-line" wx:if="{{index < historyList.length - 1}}"></view>
+      </view>
+      <!-- 时间线内容 -->
+      <view class="timeline-content">
+        <text class="timeline-date">{{item.date}}</text>
+        <text class="timeline-text">{{item.text}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{historyList.length === 0 && todayDone}}">
+    <text class="empty-icon">📝</text>
+    <text class="empty-text">还没有历史记录\n坚持每天记录，看到自己的变化</text>
+  </view>
+
+</view>

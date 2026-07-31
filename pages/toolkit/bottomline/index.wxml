@@ -1,0 +1,52 @@
+<!--pages/toolkit/bottomline/index.wxml-->
+<view class="page-container">
+
+  <!-- 引导语 -->
+  <view class="callout callout-warning">
+    <text>为每个生命维度设定一条底线。一旦跌破，必须停下处理，不允许"再忍忍"。</text>
+  </view>
+
+  <!-- 完成进度 -->
+  <view class="progress-bar card">
+    <view class="progress-info">
+      <text class="progress-label">已设定底线</text>
+      <text class="progress-count">{{filledCount}}/{{dimensions.length}}</text>
+    </view>
+    <view class="progress-track">
+      <view class="progress-fill" style="width: {{filledCount / dimensions.length * 100}}%"></view>
+    </view>
+  </view>
+
+  <!-- 六维卡片 -->
+  <view class="dim-card card" wx:for="{{dimensions}}" wx:key="key">
+    <view class="dim-header">
+      <view class="dim-left">
+        <text class="dim-icon">{{item.icon}}</text>
+        <view class="dim-info">
+          <text class="dim-name">{{item.name}}</text>
+          <text class="dim-desc text-muted">{{item.desc}}</text>
+        </view>
+      </view>
+      <!-- 红色告警指示器 -->
+      <view class="alert-indicator {{filledKeys[item.key] ? 'alert-active' : 'alert-empty'}}">
+        <text class="alert-dot"></text>
+      </view>
+    </view>
+
+    <view class="dim-input-area">
+      <text class="input-label text-muted">你的底线是：</text>
+      <input
+        class="dim-input"
+        type="text"
+        placeholder="例如：每周睡眠 >= 6.5h"
+        placeholder-class="input-placeholder"
+        value="{{form[item.key]}}"
+        data-key="{{item.key}}"
+        bindinput="onDimensionInput"
+        bindblur="onBlur"
+        maxlength="100"
+      />
+    </view>
+  </view>
+
+</view>

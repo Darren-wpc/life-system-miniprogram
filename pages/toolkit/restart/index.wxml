@@ -1,0 +1,94 @@
+<!--pages/toolkit/restart/index.wxml-->
+<view class="page-container">
+
+  <!-- 引导语 -->
+  <view class="callout callout-info">
+    <text>为最恐惧的场景写好前30天行动剧本。提前写，真发生的时候你不会大脑空白。</text>
+  </view>
+
+  <!-- 剧本列表 -->
+  <view wx:if="{{scripts.length > 0}}">
+    <view class="section-title">重启剧本 ({{scripts.length}})</view>
+
+    <view class="script-list">
+      <view class="script-card card" wx:for="{{scripts}}" wx:key="id">
+        <!-- 卡片头部 -->
+        <view class="script-header" bindtap="toggleExpand" data-id="{{item.id}}">
+          <view class="script-left">
+            <text class="script-icon">🎬</text>
+            <view class="script-info">
+              <text class="script-scenario">{{item.scenario}}</text>
+              <text class="script-status text-muted">
+                {{item.hasPlan ? '已填写' : '待填写'}}
+              </text>
+            </view>
+          </view>
+          <view class="script-right">
+            <view class="status-badge badge {{item.hasPlan ? 'badge-green' : 'badge-yellow'}}">
+              {{item.hasPlan ? '已完成' : '未完成'}}
+            </view>
+            <text class="expand-arrow">{{expandedId === item.id ? '收起' : '展开'}}</text>
+          </view>
+        </view>
+
+        <!-- 展开内容 -->
+        <view class="script-body" wx:if="{{expandedId === item.id}}">
+          <view class="body-divider"></view>
+          <text class="body-label text-muted">前30天行动计划：</text>
+          <textarea
+            class="plan-textarea"
+            placeholder="写下如果这个场景发生，你前30天会怎么做..."
+            placeholder-class="input-placeholder"
+            value="{{item.plan}}"
+            data-id="{{item.id}}"
+            bindinput="onPlanInput"
+            bindblur="onPlanBlur"
+            maxlength="2000"
+            auto-height
+          />
+          <view class="textarea-footer">
+            <text class="text-muted" style="font-size: 22rpx;">{{item.plan ? item.plan.length : 0}}/2000</text>
+          </view>
+          <view class="script-delete-row">
+            <button class="btn-outline delete-scenario-btn" bindtap="deleteScript" data-id="{{item.id}}">删除此剧本</button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{scripts.length === 0 && !showAdd}}" class="empty-state">
+    <text class="empty-icon">🔄</text>
+    <text class="empty-text">还没有重启剧本\n为最坏的情况提前做好准备</text>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="add-trigger" wx:if="{{!showAdd}}" bindtap="toggleAdd">
+    <text class="add-trigger-icon">+</text>
+    <text class="add-trigger-text">添加新场景</text>
+  </view>
+
+  <!-- 添加表单 -->
+  <view class="add-form card" wx:if="{{showAdd}}">
+    <view class="form-title">新增重启场景</view>
+    <view class="form-group">
+      <text class="form-label text-muted">场景名称：</text>
+      <input
+        class="form-input"
+        type="text"
+        placeholder="例如：如果突发重大疾病"
+        placeholder-class="input-placeholder"
+        value="{{newScenario}}"
+        bindinput="onScenarioInput"
+        bindconfirm="addScenario"
+        maxlength="50"
+      />
+    </view>
+    <view class="form-actions">
+      <button class="btn-outline cancel-btn" bindtap="toggleAdd">取消</button>
+      <button class="btn-primary confirm-btn" bindtap="addScenario" disabled="{{!canSubmit}}">确认添加</button>
+    </view>
+  </view>
+
+</view>

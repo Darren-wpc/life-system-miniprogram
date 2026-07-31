@@ -1,0 +1,80 @@
+<!--pages/toolkit/uncontrollable/index.wxml-->
+<view class="page-container">
+
+  <!-- 引导语 -->
+  <view class="callout callout-info">
+    <text>把你本月在焦虑的事列出来，然后逐个判断：这是我能控制的，还是不能控制的？</text>
+  </view>
+
+  <!-- 汇总统计 -->
+  <view class="summary-card card">
+    <view class="summary-row">
+      <view class="summary-item summary-controllable">
+        <text class="summary-num">{{controllableCount}}</text>
+        <text class="summary-label">可控</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item summary-uncontrollable">
+        <text class="summary-num">{{uncontrollableCount}}</text>
+        <text class="summary-label">不可控</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 不可控提示 -->
+  <view class="callout callout-danger" wx:if="{{uncontrollableCount > 0}}">
+    <text>这些是你练习放手的部分。不可控的事，最健康的做法是承认它不可控，然后把注意力放回可控的事上。</text>
+  </view>
+
+  <!-- 输入区 -->
+  <view class="input-area card">
+    <input
+      class="anxiety-input"
+      type="text"
+      placeholder="写下你正在焦虑的事..."
+      placeholder-class="input-placeholder"
+      value="{{inputText}}"
+      bindinput="onInput"
+      bindconfirm="addItem"
+      maxlength="200"
+    />
+    <view class="input-btn-row">
+      <text class="text-muted" style="font-size: 22rpx;">{{inputText.length}}/200</text>
+      <button class="btn-primary add-btn" bindtap="addItem" disabled="{{!canSubmit}}">
+        添加
+      </button>
+    </view>
+  </view>
+
+  <!-- 列表 -->
+  <view wx:if="{{items.length > 0}}">
+    <view class="section-title">本月清单 ({{items.length}})</view>
+
+    <view class="anxiety-list">
+      <view class="anxiety-item card {{item.type === 'uncontrollable' ? 'anxiety-uncontrollable' : ''}}" wx:for="{{items}}" wx:key="id">
+        <view class="anxiety-content">
+          <text class="anxiety-text">{{item.text}}</text>
+          <view class="anxiety-actions">
+            <view
+              class="type-toggle badge {{item.type === 'controllable' ? 'badge-green' : 'badge-red'}}"
+              bindtap="toggleType"
+              data-id="{{item.id}}"
+            >
+              {{item.type === 'controllable' ? '可控' : '不可控'}}
+            </view>
+          </view>
+        </view>
+        <view class="anxiety-delete" bindtap="deleteItem" data-id="{{item.id}}">
+          <text class="delete-icon">×</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{items.length === 0}}" class="empty-state">
+    <text class="empty-icon">🧘</text>
+    <text class="empty-text">还没有添加焦虑事项\n把烦恼写下来，区分可控与不可控</text>
+  </view>
+
+</view>

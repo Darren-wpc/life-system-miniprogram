@@ -1,0 +1,131 @@
+<!--pages/assess/weekly/index.wxml-->
+<view class="page-container">
+
+  <!-- 本周标识 -->
+  <view class="week-header card">
+    <view class="week-label">本周评估</view>
+    <view class="week-date">{{weekLabel}}</view>
+  </view>
+
+  <!-- 导航区域 -->
+  <view class="nav-area card">
+    <view class="nav-btn" bindtap="goFactors">
+      <text class="nav-icon">📊</text>
+      <text class="nav-label">五因子计算</text>
+      <text class="nav-arrow">›</text>
+    </view>
+    <view class="nav-divider"></view>
+    <view class="nav-btn" bindtap="goResources">
+      <text class="nav-icon">📦</text>
+      <text class="nav-label">资源盘点</text>
+      <text class="nav-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 六维度评分 -->
+  <view class="section-title">六维自评</view>
+
+  <view class="card" wx:for="{{dimensions}}" wx:key="key">
+    <view class="dim-item">
+      <!-- 维度头部 -->
+      <view class="dim-header">
+        <view class="dim-left">
+          <text class="dim-icon">{{item.icon}}</text>
+          <view class="dim-info">
+            <text class="dim-name">{{item.name}}</text>
+            <text class="dim-desc">{{item.desc}}</text>
+          </view>
+        </view>
+        <view class="dim-score-wrap">
+          <text class="dim-score">{{scores[item.key]}}</text>
+          <text class="dim-score-max">/5</text>
+        </view>
+      </view>
+
+      <!-- 滑块 -->
+      <view class="dim-slider">
+        <slider
+          min="1" max="5" step="1"
+          value="{{scores[item.key]}}"
+          activeColor="var(--primary)"
+          backgroundColor="var(--rule)"
+          block-size="24"
+          show-value="{{false}}"
+          data-key="{{item.key}}"
+          bindchange="onSliderChange"
+        />
+        <view class="dim-scale">
+          <text class="scale-label">1</text>
+          <text class="scale-label">2</text>
+          <text class="scale-label">3</text>
+          <text class="scale-label">4</text>
+          <text class="scale-label">5</text>
+        </view>
+      </view>
+
+      <!-- 上周对比 -->
+      <view class="dim-compare" wx:if="{{prevScores[item.key] !== null}}">
+        <text class="compare-label text-muted">上周：</text>
+        <text class="compare-value">{{prevScores[item.key]}}</text>
+        <text
+          class="compare-diff {{scores[item.key] > prevScores[item.key] ? 'up' : scores[item.key] < prevScores[item.key] ? 'down' : 'same'}}"
+        >
+          {{scores[item.key] > prevScores[item.key] ? '↑' : scores[item.key] < prevScores[item.key] ? '↓' : '→'}}
+          {{scores[item.key] - prevScores[item.key] > 0 ? '+' : ''}}{{scores[item.key] - prevScores[item.key]}}
+        </text>
+      </view>
+      <view class="dim-compare" wx:else>
+        <text class="compare-label text-muted">暂无上周数据</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 事件记录 -->
+  <view class="section-title">本周事件</view>
+
+  <view class="card">
+    <view class="event-section">
+      <view class="event-label">
+        <text class="event-icon-energy">⚡</text>
+        <text class="event-title">充电事件</text>
+      </view>
+      <text class="event-hint">这周最有能量的一件事是什么？</text>
+      <textarea
+        class="event-textarea"
+        placeholder="记录让你感到充实、有能量的事情..."
+        placeholder-class="textarea-placeholder"
+        value="{{energyText}}"
+        bindinput="onEnergyInput"
+        maxlength="500"
+        auto-height
+      />
+    </view>
+
+    <view class="event-divider"></view>
+
+    <view class="event-section">
+      <view class="event-label">
+        <text class="event-icon-drain">🔋</text>
+        <text class="event-title">耗电事件</text>
+      </view>
+      <text class="event-hint">这周最消耗你能量的一件事是什么？</text>
+      <textarea
+        class="event-textarea"
+        placeholder="记录让你感到疲惫、被消耗的事情..."
+        placeholder-class="textarea-placeholder"
+        value="{{drainText}}"
+        bindinput="onDrainInput"
+        maxlength="500"
+        auto-height
+      />
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-area">
+    <button class="btn-primary save-btn" bindtap="onSave" loading="{{saving}}">
+      保存本周评估
+    </button>
+  </view>
+
+</view>

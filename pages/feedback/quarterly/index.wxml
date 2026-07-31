@@ -1,0 +1,219 @@
+<!--pages/feedback/quarterly/index.wxml-->
+<view class="page-container">
+
+  <!-- 季度选择器 -->
+  <view class="quarter-header card">
+    <view class="quarter-left">
+      <text class="quarter-icon">📅</text>
+      <view class="quarter-info">
+        <text class="quarter-label">当前季度</text>
+        <text class="quarter-value">{{currentQuarter}}</text>
+      </view>
+    </view>
+    <view class="quarter-status" wx:if="{{hasReview}}">
+      <text class="status-done">已完成复盘</text>
+    </view>
+    <view class="quarter-status" wx:else>
+      <text class="status-pending">待复盘</text>
+    </view>
+  </view>
+
+  <!-- 已完成：只读查看 -->
+  <block wx:if="{{hasReview}}">
+    <view class="section-title">结构检视</view>
+
+    <!-- 崩溃点 -->
+    <view class="card review-card">
+      <view class="review-card-header">
+        <text class="review-icon">💥</text>
+        <text class="review-title">崩溃点检视</text>
+      </view>
+      <text class="review-question">哪个维度的崩塌会把一切拖下去？</text>
+      <view class="review-answer">{{reviewData.collapseText}}</view>
+    </view>
+
+    <!-- 杠杆点 -->
+    <view class="card review-card">
+      <view class="review-card-header">
+        <text class="review-icon">🔑</text>
+        <text class="review-title">杠杆点检视</text>
+      </view>
+      <text class="review-question">改善哪个维度能带动其他维度？</text>
+      <view class="review-answer">{{reviewData.leverageText}}</view>
+    </view>
+
+    <!-- 失衡点 -->
+    <view class="card review-card">
+      <view class="review-card-header">
+        <text class="review-icon">⚖️</text>
+        <text class="review-title">失衡点检视</text>
+      </view>
+      <text class="review-question">是否有某个维度过强，压制了其他维度？</text>
+      <view class="review-answer">{{reviewData.imbalanceText}}</view>
+    </view>
+
+    <!-- 可持续性 -->
+    <view class="card review-card">
+      <view class="review-card-header">
+        <text class="review-icon">♻️</text>
+        <text class="review-title">可持续性检视</text>
+      </view>
+      <text class="review-question">当前的生活方式能再坚持一年吗？</text>
+      <view class="review-answer">{{reviewData.sustainableText}}</view>
+    </view>
+
+    <!-- 框架问题 -->
+    <view class="section-title">框架更新</view>
+
+    <view class="card review-card">
+      <view class="review-card-header">
+        <text class="review-icon">📏</text>
+        <text class="review-title">标准更新</text>
+      </view>
+      <text class="review-question">本季度标准需要更新吗？</text>
+      <view class="review-answer">{{reviewData.standardUpdateText}}</view>
+    </view>
+
+    <view class="card review-card">
+      <view class="review-card-header">
+        <text class="review-icon">🎯</text>
+        <text class="review-title">下季度焦点</text>
+      </view>
+      <text class="review-question">下一季度集中精力在哪个因子上？</text>
+      <view class="review-answer focus-tag">
+        <text wx:for="{{factorOptions}}" wx:key="key" wx:if="{{item.key === reviewData.focusFactor}}">
+          {{item.name}}
+        </text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 未完成：输入表单 -->
+  <block wx:else>
+    <view class="section-title">结构检视</view>
+
+    <view class="callout callout-info mb-24">
+      从四个结构性视角审视本季度，发现系统中的薄弱环节和杠杆机会。
+    </view>
+
+    <!-- 崩溃点 -->
+    <view class="card form-card">
+      <view class="form-header">
+        <text class="form-icon">💥</text>
+        <text class="form-title">崩溃点检视</text>
+      </view>
+      <text class="form-question">哪个维度的崩塌会把一切拖下去？</text>
+      <textarea
+        class="form-textarea"
+        placeholder="想想如果这个维度崩溃，其他维度会怎样..."
+        placeholder-class="textarea-placeholder"
+        value="{{collapseText}}"
+        bindinput="onCollapseInput"
+        maxlength="1000"
+        auto-height
+      />
+    </view>
+
+    <!-- 杠杆点 -->
+    <view class="card form-card">
+      <view class="form-header">
+        <text class="form-icon">🔑</text>
+        <text class="form-title">杠杆点检视</text>
+      </view>
+      <text class="form-question">改善哪个维度能带动其他维度？</text>
+      <textarea
+        class="form-textarea"
+        placeholder="哪个改善能产生最大的连锁效应..."
+        placeholder-class="textarea-placeholder"
+        value="{{leverageText}}"
+        bindinput="onLeverageInput"
+        maxlength="1000"
+        auto-height
+      />
+    </view>
+
+    <!-- 失衡点 -->
+    <view class="card form-card">
+      <view class="form-header">
+        <text class="form-icon">⚖️</text>
+        <text class="form-title">失衡点检视</text>
+      </view>
+      <text class="form-question">是否有某个维度过强，压制了其他维度？</text>
+      <textarea
+        class="form-textarea"
+        placeholder="过度投入某一方面是否挤占了其他维度..."
+        placeholder-class="textarea-placeholder"
+        value="{{imbalanceText}}"
+        bindinput="onImbalanceInput"
+        maxlength="1000"
+        auto-height
+      />
+    </view>
+
+    <!-- 可持续性 -->
+    <view class="card form-card">
+      <view class="form-header">
+        <text class="form-icon">♻️</text>
+        <text class="form-title">可持续性检视</text>
+      </view>
+      <text class="form-question">当前的生活方式能再坚持一年吗？</text>
+      <textarea
+        class="form-textarea"
+        placeholder="诚实地评估当前的节奏是否可持续..."
+        placeholder-class="textarea-placeholder"
+        value="{{sustainableText}}"
+        bindinput="onSustainableInput"
+        maxlength="1000"
+        auto-height
+      />
+    </view>
+
+    <!-- 框架问题 -->
+    <view class="section-title">框架更新</view>
+
+    <!-- 标准更新 -->
+    <view class="card form-card">
+      <view class="form-header">
+        <text class="form-icon">📏</text>
+        <text class="form-title">本季度标准需要更新吗？</text>
+      </view>
+      <textarea
+        class="form-textarea"
+        placeholder="你用来衡量自己的那把尺子，还合适吗..."
+        placeholder-class="textarea-placeholder"
+        value="{{standardUpdateText}}"
+        bindinput="onStandardUpdateInput"
+        maxlength="1000"
+        auto-height
+      />
+    </view>
+
+    <!-- 集中因子选择 -->
+    <view class="card form-card">
+      <view class="form-header">
+        <text class="form-icon">🎯</text>
+        <text class="form-title">下一季度集中精力在哪个因子上？</text>
+      </view>
+      <view class="factor-list">
+        <view
+          class="factor-item {{focusFactor === item.key ? 'factor-selected' : ''}}"
+          wx:for="{{factorOptions}}"
+          wx:key="key"
+          data-key="{{item.key}}"
+          bindtap="onFactorSelect"
+        >
+          <text class="factor-name">{{item.name}}</text>
+          <text class="factor-desc">{{item.desc}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 保存按钮 -->
+    <view class="save-area">
+      <button class="btn-primary save-btn" bindtap="onSave" loading="{{saving}}">
+        保存季度复盘
+      </button>
+    </view>
+  </block>
+
+</view>

@@ -1,0 +1,281 @@
+/* pages/profile/pivot/index.wxss - 转向信号检测样式 */
+
+/* 季度标识 */
+.quarter-badge {
+  display: inline-block;
+  padding: 8rpx 24rpx;
+  background: var(--primary-light);
+  border-radius: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.quarter-text {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* 信号计数器 */
+.signal-counter {
+  padding: 24rpx 32rpx;
+}
+
+.counter-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.counter-label {
+  font-size: 26rpx;
+  color: var(--muted);
+}
+
+.counter-number {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.counter-total {
+  font-size: 24rpx;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.counter-track {
+  width: 100%;
+  height: 12rpx;
+  background: var(--bg);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.counter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, #14b8a6 100%);
+  border-radius: 6rpx;
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+
+/* 信号清单 */
+.signal-list {
+  margin-bottom: 24rpx;
+}
+
+.signal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 28rpx 32rpx;
+  border-bottom: 1rpx solid var(--rule);
+}
+
+.signal-item:last-child {
+  border-bottom: none;
+}
+
+.signal-item:active {
+  background: var(--bg);
+}
+
+.signal-check {
+  flex-shrink: 0;
+  width: 44rpx;
+  height: 44rpx;
+  border: 3rpx solid var(--rule);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4rpx;
+  transition: all 0.2s ease;
+}
+
+.signal-checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.check-icon {
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.signal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  flex: 1;
+}
+
+.signal-text {
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.signal-auto-tag {
+  display: inline-block;
+}
+
+.auto-badge {
+  display: inline-block;
+  padding: 2rpx 12rpx;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 20rpx;
+  font-weight: 500;
+  border-radius: 8rpx;
+}
+
+/* 转向准备清单 */
+.prep-section {
+  margin-top: 16rpx;
+}
+
+.prep-list {
+  margin-bottom: 24rpx;
+}
+
+.prep-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 28rpx 32rpx;
+  border-bottom: 1rpx solid var(--rule);
+}
+
+.prep-item:last-child {
+  border-bottom: none;
+}
+
+.prep-item:active {
+  background: var(--bg);
+}
+
+.prep-check {
+  flex-shrink: 0;
+  width: 44rpx;
+  height: 44rpx;
+  border: 3rpx solid var(--rule);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rpx;
+  transition: all 0.2s ease;
+}
+
+.prep-checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.prep-check-icon {
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.prep-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  flex: 1;
+}
+
+.prep-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.prep-desc {
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+/* 准备清单结论 */
+.prep-conclusion {
+  margin-bottom: 24rpx;
+}
+
+.conclusion-card {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 28rpx 32rpx;
+}
+
+.conclusion-green {
+  background: var(--success-light);
+  border-left: 6rpx solid var(--success);
+}
+
+.conclusion-red {
+  background: var(--danger-light);
+  border-left: 6rpx solid var(--danger);
+}
+
+.conclusion-yellow {
+  background: var(--accent-light);
+  border-left: 6rpx solid var(--accent);
+}
+
+.conclusion-icon {
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+
+.conclusion-green .conclusion-icon {
+  color: var(--success);
+}
+
+.conclusion-red .conclusion-icon {
+  color: var(--danger);
+}
+
+.conclusion-yellow .conclusion-icon {
+  color: var(--accent);
+}
+
+.conclusion-text {
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.conclusion-green .conclusion-text {
+  color: var(--success);
+}
+
+.conclusion-red .conclusion-text {
+  color: var(--danger);
+}
+
+.conclusion-yellow .conclusion-text {
+  color: #92400e;
+}
+
+.prep-hint {
+  display: block;
+  text-align: center;
+  font-size: 22rpx;
+  margin-top: 16rpx;
+}
+
+/* 保存区域 */
+.save-area {
+  padding: 16rpx 0 32rpx;
+}
+
+.save-btn {
+  width: 100%;
+  font-size: 32rpx;
+}

@@ -1,0 +1,90 @@
+<!--pages/toolkit/exchange/index.wxml-->
+<view class="page-container">
+
+  <!-- 引导语 -->
+  <view class="callout callout-info">
+    <text>记录你愿意用A换B的取舍。明确的汇率让你在诱惑面前不用现场计算。</text>
+  </view>
+
+  <!-- 列表 -->
+  <view wx:if="{{items.length > 0}}">
+    <view class="section-title">取舍汇率 ({{items.length}})</view>
+
+    <view class="exchange-list">
+      <view class="exchange-card card" wx:for="{{items}}" wx:key="id">
+        <view class="exchange-arrow">
+          <view class="exchange-from">
+            <text class="exchange-label text-muted">愿意交换</text>
+            <text class="exchange-text">{{item.from}}</text>
+          </view>
+          <view class="arrow-symbol">
+            <text class="arrow-icon">→</text>
+          </view>
+          <view class="exchange-to">
+            <text class="exchange-label text-muted">换来</text>
+            <text class="exchange-text exchange-to-text">{{item.to}}</text>
+          </view>
+        </view>
+        <view class="exchange-footer">
+          <text class="exchange-date text-muted">{{item.dateStr}}</text>
+          <view class="exchange-delete" bindtap="deleteItem" data-id="{{item.id}}">
+            <text class="delete-icon">×</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{items.length === 0 && !showAdd}}" class="empty-state">
+    <text class="empty-icon">⚖</text>
+    <text class="empty-text">还没有设定取舍汇率\n明确你愿意用什么换什么</text>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="add-trigger" wx:if="{{!showAdd}}" bindtap="toggleAdd">
+    <text class="add-trigger-icon">+</text>
+    <text class="add-trigger-text">添加新汇率</text>
+  </view>
+
+  <!-- 添加表单 -->
+  <view class="add-form card" wx:if="{{showAdd}}">
+    <view class="form-title">新增取舍汇率</view>
+
+    <view class="form-group">
+      <text class="form-label text-muted">我愿意交换：</text>
+      <input
+        class="form-input"
+        type="text"
+        placeholder="例如：每天加班到10点"
+        placeholder-class="input-placeholder"
+        value="{{fromText}}"
+        bindinput="onFromInput"
+        maxlength="100"
+      />
+    </view>
+
+    <view class="form-arrow">
+      <text class="arrow-divider">→</text>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label text-muted">换来：</text>
+      <input
+        class="form-input"
+        type="text"
+        placeholder="例如：月薪多5000元"
+        placeholder-class="input-placeholder"
+        value="{{toText}}"
+        bindinput="onToInput"
+        maxlength="100"
+      />
+    </view>
+
+    <view class="form-actions">
+      <button class="btn-outline cancel-btn" bindtap="toggleAdd">取消</button>
+      <button class="btn-primary confirm-btn" bindtap="addItem" disabled="{{saving || !canSubmit}}">确认添加</button>
+    </view>
+  </view>
+
+</view>

@@ -1,0 +1,207 @@
+/* app.wxss - Global Styles */
+
+/* Design Tokens */
+page {
+  --primary: #0d9488;
+  --primary-light: #ccfbf1;
+  --accent: #f59e0b;
+  --accent-light: #fef3c7;
+  --danger: #ef4444;
+  --danger-light: #fef2f2;
+  --success: #22c55e;
+  --success-light: #f0fdf4;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --ink: #1e293b;
+  --muted: #64748b;
+  --rule: #e2e8f0;
+
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+/* Page Container */
+.page-container {
+  padding: 24rpx 32rpx;
+  padding-bottom: 160rpx;
+}
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+/* Section Headers */
+.section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 32rpx 0 20rpx;
+}
+
+.section-subtitle {
+  font-size: 24rpx;
+  color: var(--muted);
+  margin-bottom: 24rpx;
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+}
+
+.btn-primary:active {
+  opacity: 0.85;
+}
+
+.btn-secondary {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 16rpx;
+  padding: 20rpx 40rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  text-align: center;
+  border: none;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border: 2rpx solid var(--primary);
+  border-radius: 16rpx;
+  padding: 20rpx 40rpx;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+/* Status Dots */
+.status-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.green { background: var(--success); }
+.status-dot.yellow { background: var(--accent); }
+.status-dot.red { background: var(--danger); }
+
+/* Tags / Badges */
+.badge {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.badge-green { background: var(--success-light); color: var(--success); }
+.badge-yellow { background: var(--accent-light); color: var(--accent); }
+.badge-red { background: var(--danger-light); color: var(--danger); }
+
+/* Empty States */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  color: var(--muted);
+}
+
+.empty-state .empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+  opacity: 0.4;
+}
+
+.empty-state .empty-text {
+  font-size: 28rpx;
+  text-align: center;
+  line-height: 1.8;
+}
+
+/* Callout Boxes */
+.callout {
+  padding: 24rpx 28rpx;
+  border-radius: 16rpx;
+  margin: 24rpx 0;
+  font-size: 26rpx;
+  line-height: 1.7;
+}
+
+.callout-info {
+  background: var(--primary-light);
+   color: var(--primary);
+  border-left: 6rpx solid var(--primary);
+}
+
+.callout-warning {
+  background: var(--accent-light);
+   color: #92400e;
+  border-left: 6rpx solid var(--accent);
+}
+
+.callout-danger {
+  background: var(--danger-light);
+  color: #991b1b;
+  border-left: 6rpx solid var(--danger);
+}
+
+/* List Item */
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid var(--rule);
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item .item-label {
+  flex: 1;
+  font-size: 28rpx;
+}
+
+.list-item .item-value {
+  font-size: 28rpx;
+  color: var(--muted);
+}
+
+/* Utility */
+.text-muted { color: var(--muted); }
+.text-primary { color: var(--primary); }
+.text-danger { color: var(--danger); }
+.text-accent { color: var(--accent); }
+.text-center { text-align: center; }
+.text-bold { font-weight: 700; }
+.mt-16 { margin-top: 16rpx; }
+.mt-24 { margin-top: 24rpx; }
+.mt-32 { margin-top: 32rpx; }
+.mb-16 { margin-bottom: 16rpx; }
+.mb-24 { margin-bottom: 24rpx; }
+.mb-32 { margin-bottom: 32rpx; }
+.flex-row { display: flex; flex-direction: row; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.flex-1 { flex: 1; }
+.gap-16 { gap: 16rpx; }
+.gap-24 { gap: 24rpx; }
