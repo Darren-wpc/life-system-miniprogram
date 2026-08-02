@@ -705,7 +705,586 @@ function _matchAny(text, keywords) {
   return keywords.some(k => text.includes(k));
 }
 
+/**
+ * 生成每日一句话 AI 解读
+ * @param {Object} params - { todayRecord, recentDays, weeklyScores }
+ * @returns {string} 一句话解读
+ */
+function generateDailyReflect(params) {
+  const { todayRecord, recentDays, weeklyScores } = params;
+
+  if (!todayRecord) {
+    return '记录每一天，是认识自己的第一步。';
+  }
+
+  const mood = todayRecord.moodEmoji || '';
+  const text = todayRecord.text || '';
+  const parts = [];
+
+  // 心情模式分析（AI-P0-4: emoji 与 constants.js MOOD_EMOJIS 对齐）
+  const moodMap = {
+    '😊': { label: '愉悦', energy: 'high' },
+    '😌': { label: '平稳', energy: 'medium' },
+    '😐': { label: '中性', energy: 'low' },
+    '😔': { label: '低落', energy: 'drain' },
+    '😢': { label: '疲惫', energy: 'drain' }
+  };
+  const moodInfo = moodMap[mood] || { label: '未知', energy: 'neutral' };
+
+  // 趋势分析
+  let trend = '';
+  if (recentDays && recentDays.length >= 3) {
+    const recent3 = recentDays.slice(0, 3);
+    const highEnergy = recent3.filter(d => ['😊', '😌'].includes(d.moodEmoji)).length;
+    const lowEnergy = recent3.filter(d => ['😔', '😢'].includes(d.moodEmoji)).length;
+
+    if (lowEnergy >= 2) {
+      trend = '近期能量持续偏低，';
+    } else if (highEnergy >= 2) {
+      trend = '近期状态稳定向好，';
+    } else {
+      trend = '近期情绪有波动，';
+    }
+  }
+
+  // 周评关联分析
+  let weeklyLink = '';
+  if (weeklyScores) {
+    const dims = ['survival', 'autonomy', 'capability', 'relationship', 'innerOrder', 'meaning'];
+    let lowestKey = dims[0];
+    let lowestScore = 6;
+    dims.forEach(key => {
+      const score = weeklyScores[key];
+      if (score !== undefined && score < lowestScore) {
+        lowestScore = score;
+        lowestKey = key;
+      }
+    });
+
+    if (lowestScore <= 2) {
+      const dimLabels = {
+        survival: '生存基础', autonomy: '自主权', capability: '能力资产',
+        relationship: '关系支持', innerOrder: '内在秩序', meaning: '意义贡献'
+      };
+      weeklyLink = `本周${dimLabels[lowestKey]}得分较低（${lowestScore}/5），`;
+    }
+  }
+
+  // 情绪模式识别
+  let pattern = '';
+  if (moodInfo.energy === 'drain') {
+    if (text.includes('累') || text.includes('压力') || text.includes('焦虑')) {
+      pattern = '注意识别压力来源，';
+    } else if (text.includes('失望') || text.includes('挫败')) {
+      pattern = '允许自己有低谷期，';
+    } else {
+      pattern = '能量低的时候先照顾好身体，';
+    }
+  } else if (moodInfo.energy === 'high') {
+    if (text.includes('完成') || text.includes('成就')) {
+      pattern = '抓住这种成就感，';
+    } else if (text.includes('开心') || text.includes('满足')) {
+      pattern = '记录下这种满足感的来源，';
+    } else {
+      pattern = '保持这种能量状态，';
+    }
+  } else {
+    pattern = '保持觉察，';
+  }
+
+  // 组合一句话
+  let sentence = trend + weeklyLink + pattern;
+
+  // 根据心情给出一句话建议（AI-P0-4: emoji 与 constants.js MOOD_EMOJIS 对齐）
+  const suggestions = {
+    '😊': '今天的状态很好，适合推进一些有挑战的事。',
+    '😌': '平稳是积累的基础，继续保持节奏。',
+    '😐': '中性不代表平淡，试着找到今天的一个小亮点。',
+    '😔': '低落时会过去的，先做一件让自己舒服的小事。',
+    '😢': '疲惫时允许休息，明天是新的开始。'
+  };
+
+  sentence += suggestions[mood] || '明天继续记录。';
+
+  return sentence;
+}
+
+/**
+ * 生成季度复盘 AI 总结
+ * @param {Object} params - { reviewData, weeklyList, factorsList }
+ *   - reviewData: { collapseText, leverageText, imbalanceText, sustainableText, standardUpdateText, focusFactor }
+ *   - weeklyList: 过去一季度的周评分数数组（最多 13 条，按时间倒序）
+ *   - factorsList: 因子数据数组
+ * @returns {Object} { summary, trends, keyFindings, recommendations }
+ */
+function generateQuarterlySummary(params) {
+  const { reviewData, weeklyList, factorsList } = params;
+
+  if (!reviewData) {
+    return _emptyQuarterlySummary();
+  }
+
+  // 1. 总体评估
+  const summary = _buildQuarterlySummary(reviewData, weeklyList);
+
+  // 2. 趋势分析
+  const trends = _buildQuarterlyTrends(weeklyList);
+
+  // 3. 关键发现
+  const keyFindings = _buildQuarterlyKeyFindings(reviewData, weeklyList, factorsList);
+
+  // 4. 下季度建议
+  const recommendations = _buildQuarterlyRecommendations(reviewData, weeklyList, factorsList);
+
+  return {
+    summary,
+    trends,
+    keyFindings,
+    recommendations,
+    generatedAt: Date.now(),
+    source: 'local'
+  };
+}
+
+// ===== 季度总结内部实现 =====
+
+function _emptyQuarterlySummary() {
+  return {
+    summary: '暂无季度复盘数据，请先完成季度结构检视。',
+    trends: [],
+    keyFindings: [],
+    recommendations: [],
+    generatedAt: Date.now(),
+    source: 'local'
+  };
+}
+
+/**
+ * 构建季度总体评估（2-3 句）
+ */
+function _buildQuarterlySummary(reviewData, weeklyList) {
+  const parts = [];
+
+  // 基于周评数据的整体趋势
+  if (weeklyList && weeklyList.length >= 2) {
+    const latest = weeklyList[0];
+    const oldest = weeklyList[weeklyList.length - 1];
+    const latestOverall = parseFloat(diagnosis.calcOverallHealth(latest));
+    const oldestOverall = parseFloat(diagnosis.calcOverallHealth(oldest));
+    const diff = latestOverall - oldestOverall;
+
+    if (diff > 0.5) {
+      parts.push(`本季度综合健康度从 ${oldestOverall.toFixed(1)} 提升至 ${latestOverall.toFixed(1)}，整体呈上升趋势。`);
+    } else if (diff < -0.5) {
+      parts.push(`本季度综合健康度从 ${oldestOverall.toFixed(1)} 下降至 ${latestOverall.toFixed(1)}，整体呈下行趋势，需警惕。`);
+    } else {
+      parts.push(`本季度综合健康度在 ${oldestOverall.toFixed(1)} ~ ${latestOverall.toFixed(1)} 之间波动，整体基本持平。`);
+    }
+  } else {
+    parts.push('本季度周评数据不足，难以判断整体趋势。');
+  }
+
+  // 基于复盘结构的判断
+  if (reviewData.collapseText) {
+    parts.push(`复盘识别出的核心崩溃风险为「${reviewData.collapseText.slice(0, 40)}${reviewData.collapseText.length > 40 ? '...' : ''}」`);
+  }
+
+  if (reviewData.focusFactor && FACTORS[reviewData.focusFactor]) {
+    parts.push(`下季度建议聚焦因子「${factorName(reviewData.focusFactor)}」。`);
+  }
+
+  return parts.join('');
+}
+
+/**
+ * 构建季度维度趋势（哪些维度上升/下降/稳定）
+ */
+function _buildQuarterlyTrends(weeklyList) {
+  const trends = [];
+
+  if (!weeklyList || weeklyList.length < 2) {
+    return trends;
+  }
+
+  const latest = weeklyList[0];
+  const oldest = weeklyList[weeklyList.length - 1];
+
+  DIM_KEYS.forEach(key => {
+    const latestScore = latest[key];
+    const oldestScore = oldest[key];
+
+    if (latestScore == null || oldestScore == null) return;
+
+    const diff = latestScore - oldestScore;
+    let direction = 'stable';
+    if (diff > 0.5) direction = 'up';
+    else if (diff < -0.5) direction = 'down';
+
+    trends.push({
+      dimension: key,
+      label: dimName(key),
+      direction,
+      change: +(diff.toFixed(1)),
+      from: oldestScore,
+      to: latestScore
+    });
+  });
+
+  return trends;
+}
+
+/**
+ * 构建季度关键发现
+ */
+function _buildQuarterlyKeyFindings(reviewData, weeklyList, factorsList) {
+  const findings = [];
+
+  // 1. 基于崩溃点检视
+  if (reviewData.collapseText && reviewData.collapseText.trim()) {
+    findings.push({
+      type: 'danger',
+      title: '崩溃风险点',
+      text: reviewData.collapseText.trim()
+    });
+  }
+
+  // 2. 基于杠杆点检视
+  if (reviewData.leverageText && reviewData.leverageText.trim()) {
+    findings.push({
+      type: 'leverage',
+      title: '关键杠杆点',
+      text: reviewData.leverageText.trim()
+    });
+  }
+
+  // 3. 基于失衡点检视
+  if (reviewData.imbalanceText && reviewData.imbalanceText.trim()) {
+    findings.push({
+      type: 'warning',
+      title: '结构性失衡',
+      text: reviewData.imbalanceText.trim()
+    });
+  }
+
+  // 4. 基于可持续性检视
+  if (reviewData.sustainableText && reviewData.sustainableText.trim()) {
+    findings.push({
+      type: 'info',
+      title: '可持续性评估',
+      text: reviewData.sustainableText.trim()
+    });
+  }
+
+  // 5. 基于周评数据的量化发现
+  if (weeklyList && weeklyList.length >= 2) {
+    const latest = weeklyList[0];
+    const oldest = weeklyList[weeklyList.length - 1];
+
+    // 找到变化最大的维度
+    let maxChange = 0;
+    let maxChangeKey = null;
+    let maxChangeDir = 'stable';
+    DIM_KEYS.forEach(key => {
+      const latestScore = latest[key];
+      const oldestScore = oldest[key];
+      if (latestScore != null && oldestScore != null) {
+        const diff = latestScore - oldestScore;
+        if (Math.abs(diff) > Math.abs(maxChange)) {
+          maxChange = diff;
+          maxChangeKey = key;
+          maxChangeDir = diff > 0.5 ? 'up' : (diff < -0.5 ? 'down' : 'stable');
+        }
+      }
+    });
+
+    if (maxChangeKey && maxChangeDir !== 'stable') {
+      const dirText = maxChangeDir === 'up' ? '上升' : '下降';
+      findings.push({
+        type: maxChangeDir === 'up' ? 'success' : 'danger',
+        title: `季度变化最显著的维度`,
+        text: `「${dimName(maxChangeKey)}」本季度${dirText}了 ${Math.abs(maxChange).toFixed(1)} 分（${oldest[maxChangeKey]} → ${latest[maxChangeKey]}），是波动最大的维度。`
+      });
+    }
+  }
+
+  // 6. 基于因子数据的发现
+  if (factorsList && factorsList.length > 0) {
+    const latestFactors = factorsList[0];
+    if (latestFactors) {
+      const bottleneck = diagnosis.findBottleneckFactor(latestFactors);
+      if (bottleneck) {
+        const val = latestFactors[bottleneck] || 0;
+        findings.push({
+          type: 'warning',
+          title: '要素瓶颈',
+          text: `当前五因子瓶颈为「${factorName(bottleneck)}」（${val.toFixed(1)}），制约了行动转化效率。`
+        });
+      }
+    }
+  }
+
+  return findings;
+}
+
+/**
+ * 构建下季度行动建议
+ */
+function _buildQuarterlyRecommendations(reviewData, weeklyList, factorsList) {
+  const recommendations = [];
+
+  // 1. 基于聚焦因子的建议
+  if (reviewData.focusFactor && FACTORS[reviewData.focusFactor]) {
+    const factor = FACTORS[reviewData.focusFactor];
+    recommendations.push({
+      priority: 'high',
+      factor: reviewData.focusFactor,
+      title: `聚焦因子：${factor.name}`,
+      text: `下季度将主要精力放在「${factor.name}」上。${factor.desc}建议每周至少做一次与此因子相关的刻意练习，并在周评中记录进展。`
+    });
+  }
+
+  // 2. 基于标准更新的建议
+  if (reviewData.standardUpdateText && reviewData.standardUpdateText.trim()) {
+    recommendations.push({
+      priority: 'medium',
+      factor: 'standards',
+      title: '更新评价标准',
+      text: `根据本季度的反思（${reviewData.standardUpdateText.trim().slice(0, 60)}${reviewData.standardUpdateText.trim().length > 60 ? '...' : ''}），下季度需要调整自我评价标准，确保标准与当前阶段匹配。`
+    });
+  }
+
+  // 3. 基于杠杆点的建议
+  if (reviewData.leverageText && reviewData.leverageText.trim()) {
+    recommendations.push({
+      priority: 'high',
+      title: '持续投入杠杆点',
+      text: `本季度识别的杠杆点仍然有效。建议下季度继续在杠杆方向上投入，每天花 15-30 分钟做一件改善杠杆维度的事，观察连带效应。`
+    });
+  }
+
+  // 4. 基于崩溃风险的建议
+  if (reviewData.collapseText && reviewData.collapseText.trim()) {
+    recommendations.push({
+      priority: 'high',
+      title: '建立崩溃防御机制',
+      text: `针对识别到的崩溃风险，建议下季度初就设定明确的底线和中断恢复脚本，一旦指标跌破底线立即启动恢复流程，防止连锁崩盘。`
+    });
+  }
+
+  // 5. 基于周评趋势的建议
+  if (weeklyList && weeklyList.length >= 2) {
+    const latest = weeklyList[0];
+    const latestOverall = parseFloat(diagnosis.calcOverallHealth(latest));
+
+    if (latestOverall < 2.5) {
+      recommendations.push({
+        priority: 'high',
+        title: '优先稳定基础维度',
+        text: `当前综合健康度偏低（${latestOverall.toFixed(1)}），下季度应优先稳定生存基础与内在秩序，暂缓追求高目标。`
+      });
+    } else if (latestOverall >= 4) {
+      recommendations.push({
+        priority: 'low',
+        title: '保持节奏，探索突破',
+        text: `当前综合健康度良好（${latestOverall.toFixed(1)}），下季度可在保持现有节奏的基础上，尝试在意义贡献或能力资产维度上寻求突破。`
+      });
+    }
+  }
+
+  // 6. 通用建议（若建议不足）
+  if (recommendations.length === 0) {
+    recommendations.push({
+      priority: 'low',
+      title: '保持定期复盘',
+      text: '建议下季度继续保持每周评估和季度复盘的节奏，用数据驱动决策，用框架指导行动。'
+    });
+  }
+
+  return recommendations;
+}
+
+// ===== 转向信号检测 =====
+
+/**
+ * 生成 AI 转向信号检测
+ * 基于历史评分趋势自动检测转向信号
+ * @param {Object} params - { weeklyList, pivotRecords, currentScores }
+ *   - weeklyList: 周评分数组（按时间正序，最旧在前）
+ *   - pivotRecords: 已有的转向信号记录数组
+ *   - currentScores: 最新一周评分（可选，若未传则取 weeklyList 最后一条）
+ * @returns {Object} { signals: [{ type, dimension, severity, description }], recommendation }
+ */
+function checkPivotSignal(params) {
+  const { weeklyList = [], pivotRecords = [], currentScores = null } = params;
+
+  const signals = [];
+
+  // 数据不足时直接返回空结果
+  if (!weeklyList || weeklyList.length < 2) {
+    return {
+      signals: [],
+      recommendation: '周评分数据不足，暂无法检测转向信号。建议连续记录至少 3 周后再进行检测。',
+      generatedAt: Date.now(),
+      source: 'local'
+    };
+  }
+
+  // 取最新评分：优先用 currentScores，否则取 weeklyList 最后一条
+  const latest = currentScores || weeklyList[weeklyList.length - 1];
+
+  // ---------- 规则 1: 连续下行 ----------
+  // 综合健康度连续 2+ 周下降
+  const overallTrend = weeklyList.map((w) => parseFloat(diagnosis.calcOverallHealth(w)));
+  let declineStreak = 0;
+  for (let i = overallTrend.length - 1; i >= 1; i--) {
+    if (overallTrend[i] < overallTrend[i - 1]) {
+      declineStreak++;
+    } else {
+      break;
+    }
+  }
+  if (declineStreak >= 2) {
+    const fromScore = overallTrend[overallTrend.length - 1 - declineStreak];
+    const toScore = overallTrend[overallTrend.length - 1];
+    signals.push({
+      type: 'consecutiveDecline',
+      dimension: null,
+      severity: declineStreak >= 3 ? 'danger' : 'warning',
+      description: `综合健康度已连续 ${declineStreak} 周下行（${fromScore} → ${toScore}），整体系统处于持续衰退状态。`
+    });
+  }
+
+  // ---------- 规则 2: 重复低位 ----------
+  // 同一维度连续 3+ 周得分 <= 2
+  DIM_KEYS.forEach((key) => {
+    let lowStreak = 0;
+    let maxLowStreak = 0;
+    for (let i = weeklyList.length - 1; i >= 0; i--) {
+      const score = weeklyList[i][key];
+      if (score !== undefined && score !== null && score <= 2) {
+        lowStreak++;
+        maxLowStreak = Math.max(maxLowStreak, lowStreak);
+      } else {
+        lowStreak = 0;
+      }
+    }
+    if (maxLowStreak >= 3) {
+      const dim = DIMENSIONS[key];
+      signals.push({
+        type: 'repeatedLow',
+        dimension: key,
+        severity: 'danger',
+        description: `「${dim ? dim.name : key}」连续 ${maxLowStreak} 周得分处于低位（≤2），该维度长期未得到改善，可能是结构性问题的信号。`
+      });
+    }
+  });
+
+  // ---------- 规则 3: 结构性崩塌 ----------
+  // 单周内 3+ 维度低于 2 分
+  const lowDims = DIM_KEYS.filter((key) => {
+    const score = latest[key];
+    return score !== undefined && score !== null && score <= 2;
+  });
+  if (lowDims.length >= 3) {
+    const dimNames = lowDims.map((k) => (DIMENSIONS[k] ? DIMENSIONS[k].name : k)).join('、');
+    signals.push({
+      type: 'structuralCollapse',
+      dimension: null,
+      severity: 'danger',
+      description: `最新一周有 ${lowDims.length} 个维度低于 2 分（${dimNames}），系统出现结构性崩塌，多个基础维度同时失守。`
+    });
+  }
+
+  // ---------- 规则 4: 差距扩大 ----------
+  // 维度间极差在 3+ 周内持续扩大
+  const gaps = weeklyList.map((w) => {
+    const scores = DIM_KEYS.map((k) => (w[k] !== undefined && w[k] !== null ? w[k] : 0));
+    return Math.max(...scores) - Math.min(...scores);
+  });
+  let gapWideningStreak = 0;
+  for (let i = gaps.length - 1; i >= 1; i--) {
+    if (gaps[i] > gaps[i - 1]) {
+      gapWideningStreak++;
+    } else {
+      break;
+    }
+  }
+  if (gapWideningStreak >= 3) {
+    const latestGap = gaps[gaps.length - 1];
+    const earliestGap = gaps[gaps.length - 1 - gapWideningStreak];
+    signals.push({
+      type: 'gapWidening',
+      dimension: null,
+      severity: 'warning',
+      description: `维度间差距连续 ${gapWideningStreak} 周扩大（极差从 ${earliestGap} 扩大到 ${latestGap}），系统失衡加剧，强维度在消耗弱维度的资源。`
+    });
+  }
+
+  // ---------- 结合已有转向记录 ----------
+  // 如果已有转向信号记录，补充信息
+  if (pivotRecords && pivotRecords.length > 0) {
+    const latestPivot = pivotRecords[0]; // newest-first
+    if (latestPivot && latestPivot.checkedCount >= 2) {
+      signals.push({
+        type: 'historicalSignal',
+        dimension: null,
+        severity: latestPivot.checkedCount >= 3 ? 'danger' : 'warning',
+        description: `历史转向检测记录显示已勾选 ${latestPivot.checkedCount} 个信号，建议结合本次检测综合判断。`
+      });
+    }
+  }
+
+  // ---------- 生成综合建议 ----------
+  const recommendation = _buildPivotRecommendation(signals);
+
+  return {
+    signals,
+    recommendation,
+    generatedAt: Date.now(),
+    source: 'local'
+  };
+}
+
+/**
+ * 基于检测到的信号生成综合建议
+ */
+function _buildPivotRecommendation(signals) {
+  if (signals.length === 0) {
+    return '暂未检测到明显的转向信号。当前系统运转相对稳定，建议继续保持观察，定期复评。';
+  }
+
+  const dangerCount = signals.filter((s) => s.severity === 'danger').length;
+  const warningCount = signals.filter((s) => s.severity === 'warning').length;
+
+  const parts = [];
+
+  if (dangerCount >= 2) {
+    parts.push('检测到多个高危转向信号，系统正处于严重衰退中。');
+    parts.push('建议：1）立即暂停新增目标，优先稳定基础维度（生存基础、内在秩序）；');
+    parts.push('2）完成转向准备清单，评估是否已具备转向条件；');
+    parts.push('3）若身体出现躯体化症状，优先处理健康问题，这是不可拖延的底线。');
+  } else if (dangerCount >= 1) {
+    parts.push('检测到高危转向信号，某个或多个维度已处于崩溃边缘。');
+    parts.push('建议：1）使用"中断恢复脚本"快速止损，先稳定再决策；');
+    parts.push('2）识别最低维度的根因，区分是暂时性波动还是结构性问题；');
+    parts.push('3）认真思考这是否是反复出现的问题模式——如果是，转向可能比修复更高效。');
+  } else if (warningCount >= 1) {
+    parts.push('检测到需关注的转向信号，系统出现下行或失衡趋势。');
+    parts.push('建议：1）连续观察 2-3 周，确认趋势是否持续；');
+    parts.push('2）找到当前杠杆点，集中精力改善它以带动整体回升；');
+    parts.push('3）不要急于转向，先尝试在当前系统内做结构性调整。');
+  } else {
+    parts.push('检测到轻微信号，但尚不构成转向依据。');
+    parts.push('建议继续保持定期评估，关注趋势变化。');
+  }
+
+  return parts.join('');
+}
+
 module.exports = {
   generateWeeklyInsight,
-  generateCoachReply
+  generateCoachReply,
+  generateDailyReflect,
+  generateQuarterlySummary,
+  checkPivotSignal
 };

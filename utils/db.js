@@ -226,11 +226,16 @@ const dailyDB = {
     return list.slice(0, count);
   },
 
-  // P1-8: 按周过滤获取日级反馈
+  // P1-8/P2-15: 按周过滤获取日级反馈（增加上界，避免混入后续周数据）
   getByWeek(weekId) {
     const list = _get(STORAGE_KEYS.DAILY_FEEDBACK) || [];
     if (!weekId) return list;
-    return list.filter(r => r.id >= weekId);
+    // 计算该周末日期（weekId + 6天）作为上界
+    const startDate = new Date(weekId);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+    const endStr = _getDateStr(endDate);
+    return list.filter(r => r.id >= weekId && r.id <= endStr);
   },
 
   getStreak() {
@@ -382,7 +387,7 @@ const settingsDB = {
 // ===== 初始化 =====
 function init() {
   // P2-8: 数据版本号与迁移机制
-  var savedVersion = _get(STORAGE_KEYS.SCHEMA_VERSION);
+  const savedVersion = _get(STORAGE_KEYS.SCHEMA_VERSION);
   if (!savedVersion) {
     // 首次安装或从旧版升级
     _set(STORAGE_KEYS.WEEKLY_SCORES, _get(STORAGE_KEYS.WEEKLY_SCORES) || []);
@@ -391,6 +396,8 @@ function init() {
     _set(STORAGE_KEYS.QUARTERLY_REVIEW, _get(STORAGE_KEYS.QUARTERLY_REVIEW) || []);
     _set(STORAGE_KEYS.NARRATIVE, _get(STORAGE_KEYS.NARRATIVE) || []);
     _set(STORAGE_KEYS.PIVOT, _get(STORAGE_KEYS.PIVOT) || []);
+    // P1-10: 补充初始化资源转化记录
+    _set(STORAGE_KEYS.RESOURCE_TRANSFORMS, _get(STORAGE_KEYS.RESOURCE_TRANSFORMS) || []);
   }
   _set(STORAGE_KEYS.SETTINGS, _get(STORAGE_KEYS.SETTINGS) || { dailyReminder: '21:00' });
   _set(STORAGE_KEYS.SCHEMA_VERSION, SCHEMA_VERSION);

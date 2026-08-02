@@ -1,6 +1,7 @@
 // pages/feedback/quarterly/index.js
 const db = require('../../../utils/db');
 const constants = require('../../../utils/constants');
+const ai = require('../../../utils/ai');
 
 Page({
   data: {
@@ -18,7 +19,10 @@ Page({
     standardUpdateText: '',  // 标准需要更新吗
     focusFactor: '',         // 下一季度集中精力
     // 因子选项
-    factorOptions: []
+    factorOptions: [],
+    // P1-2: AI 季度总结
+    aiSummary: null,
+    aiSummaryLoading: false
   },
 
   onLoad() {
@@ -57,13 +61,18 @@ Page({
         imbalanceText: review.imbalanceText || '',
         sustainableText: review.sustainableText || '',
         standardUpdateText: review.standardUpdateText || '',
-        focusFactor: review.focusFactor || ''
+        focusFactor: review.focusFactor || '',
+        // P1-2: 加载缓存的 AI 总结
+        aiSummary: review.aiSummary || null,
+        aiSummaryLoading: false
       });
     } else {
       this.setData({
         currentQuarter,
         hasReview: false,
-        reviewData: null
+        reviewData: null,
+        aiSummary: null,
+        aiSummaryLoading: false
       });
     }
   },
@@ -129,21 +138,49 @@ Page({
     this.setData({ saving: true });
 
     try {
-      db.quarterly.save({
+      const reviewData = {
         collapseText: collapseText.trim(),
         leverageText: leverageText.trim(),
         imbalanceText: imbalanceText.trim(),
         sustainableText: sustainableText.trim(),
         standardUpdateText: standardUpdateText.trim(),
         focusFactor
-      });
+      };
+      db.quarterly.save(reviewData);
       wx.showToast({ title: '复盘保存成功', icon: 'success' });
       this._loadData();
+      // P1-2: 触发 AI 季度总结
+      this._triggerQuarterlySummary(reviewData);
     } catch (err) {
       console.error('quarterly save error:', err);
       wx.showToast({ title: '保存失败', icon: 'none' });
     } finally {
       this.setData({ saving: false });
     }
+  },
+
+  /**
+   * P1-2: 触发 AI 季度总结
+   * AI-P1-3: 生成后持久化到存储，避免离开页面丢失
+   * @param {Object} reviewData - 保存的复盘数据
+   */
+  _triggerQuarterlySummary(reviewData) {
+    if (!ai.isEnabled()) return;
+
+    this.setData({ aiSummaryLoading: true, aiSummary: null });
+
+    ai.generateQuarterlySummary(reviewData).then((summary) => {
+      this.setData({ aiSummary: summary || null, aiSummaryLoading: false });
+      // AI-P1-3: 将 AI 总结持久化到季度复盘记录
+      if (summary) {
+        try {
+          db.quarterly.save({ ...reviewData, aiSummary: summary });
+        } catch (e) {
+          console.error('quarterly save aiSummary error:', e);
+        }
+      }
+    }).catch(() => {
+      this.setData({ aiSummaryLoading: false });
+    });
   }
 });

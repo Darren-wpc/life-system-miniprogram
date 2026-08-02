@@ -3,7 +3,7 @@
 const db = require('../../utils/db');
 const ai = require('../../utils/ai');
 
-const APP_VERSION = 'v2.0.0';
+const APP_VERSION = 'v2.2.0';
 const DEFAULT_REMINDER = '21:00';
 
 Page({
@@ -13,7 +13,11 @@ Page({
     clearing: false,
     // AI 设置
     aiEnabled: true,
-    cloudEnabled: false
+    cloudEnabled: false,
+    // P2-2: AI 用量统计
+    aiUsage: null,
+    // P2-2: 订阅消息
+    subscribing: false
   },
 
   onLoad() {
@@ -35,10 +39,12 @@ Page({
   _loadSettings() {
     const settings = db.settings.get();
     const aiSettings = ai.getSettings();
+    const aiUsage = ai.getUsageStats();
     this.setData({
       dailyReminder: settings.dailyReminder || DEFAULT_REMINDER,
       aiEnabled: aiSettings.enabled,
-      cloudEnabled: aiSettings.cloudEnabled
+      cloudEnabled: aiSettings.cloudEnabled,
+      aiUsage
     });
   },
 
@@ -92,6 +98,62 @@ Page({
   },
 
   /**
+   * P2-2: 请求周评提醒订阅
+   */
+  onSubscribeWeekly() {
+    if (this.data.subscribing) return;
+    this.setData({ subscribing: true });
+    ai.requestWeeklyReminderSubscription().then((res) => {
+      this.setData({ subscribing: false });
+      if (res && res.error) {
+        wx.showToast({ title: '订阅失败', icon: 'none' });
+      } else if (res && res.skipped) {
+        wx.showToast({ title: '当前环境不支持', icon: 'none' });
+      } else {
+        wx.showToast({ title: '订阅成功', icon: 'success' });
+      }
+    });
+  },
+
+  /**
+   * P2-2: 请求底线告警订阅
+   */
+  onSubscribeBottomline() {
+    if (this.data.subscribing) return;
+    this.setData({ subscribing: true });
+    ai.requestBottomlineAlertSubscription().then((res) => {
+      this.setData({ subscribing: false });
+      if (res && res.error) {
+        wx.showToast({ title: '订阅失败', icon: 'none' });
+      } else if (res && res.skipped) {
+        wx.showToast({ title: '当前环境不支持', icon: 'none' });
+      } else {
+        wx.showToast({ title: '订阅成功', icon: 'success' });
+      }
+    });
+  },
+
+  /**
+   * P2-2: 重置 AI 用量统计
+   */
+  onResetUsage() {
+    wx.showModal({
+      title: '重置用量统计',
+      content: '确定要重置 AI 用量统计吗？此操作不可恢复。',
+      confirmText: '重置',
+      confirmColor: '#ef4444',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          ai.resetUsageStats();
+          this._loadSettings();
+          wx.showToast({ title: '已重置', icon: 'success' });
+        }
+      }
+    });
+  },
+
+  /**
    * 清除全部数据 - 二次确认
    */
   onClearData() {
@@ -140,6 +202,10 @@ Page({
       wx.removeStorageSync(aiKeys.AI_INSIGHT_CACHE);
       wx.removeStorageSync(aiKeys.AI_CHAT_HISTORY);
       wx.removeStorageSync(aiKeys.AI_SETTINGS);
+      // P2-2: 清除 AI 用量统计
+      if (aiKeys.AI_USAGE) {
+        wx.removeStorageSync(aiKeys.AI_USAGE);
+      }
 
       // 重置设置为默认值
       db.settings.save({ dailyReminder: DEFAULT_REMINDER });

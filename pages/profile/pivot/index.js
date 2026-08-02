@@ -2,6 +2,7 @@
 
 const db = require('../../../utils/db');
 const constants = require('../../../utils/constants');
+const ai = require('../../../utils/ai');
 
 Page({
   data: {
@@ -25,7 +26,10 @@ Page({
     prepConclusion: '',
     prepConclusionType: '',
     saving: false,
-    hasRecord: false
+    hasRecord: false,
+    // P2-1: AI 转向检测
+    aiPivotCheck: null,
+    aiPivotLoading: false
   },
 
   onLoad() {
@@ -298,6 +302,68 @@ Page({
       prepConclusion: conclusion,
       prepConclusionType: type
     });
+  },
+
+  /**
+   * P2-1: AI 转向检测
+   * 调用 AI 引擎基于历史评分趋势自动检测转向信号
+   */
+  onCheckPivot() {
+    if (this.data.aiPivotLoading) return;
+
+    this.setData({ aiPivotLoading: true, aiPivotCheck: null });
+
+    ai.checkPivotSignal().then((result) => {
+      if (result && result.disabled) {
+        this.setData({
+          aiPivotCheck: { error: true, message: result.message || 'AI 功能未开启' },
+          aiPivotLoading: false
+        });
+        return;
+      }
+
+      if (result && result.noData) {
+        this.setData({
+          aiPivotCheck: { error: true, message: result.message || '数据不足' },
+          aiPivotLoading: false
+        });
+        return;
+      }
+
+      // 确保 signals 数组存在
+      const checkResult = {
+        signals: (result.signals || []).map((s) => ({
+          type: s.type || 'unknown',
+          dimension: s.dimension || null,
+          dimensionLabel: this._getDimensionLabel(s.dimension),
+          severity: s.severity || 'info',
+          description: s.description || ''
+        })),
+        recommendation: result.recommendation || '',
+        source: result.source || 'local',
+        signalCount: (result.signals || []).length
+      };
+
+      this.setData({
+        aiPivotCheck: checkResult,
+        aiPivotLoading: false
+      });
+    }).catch((err) => {
+      console.error('AI pivot check error:', err);
+      this.setData({
+        aiPivotCheck: { error: true, message: '检测失败，请稍后重试' },
+        aiPivotLoading: false
+      });
+    });
+  },
+
+  /**
+   * 获取维度中文名
+   */
+  _getDimensionLabel(key) {
+    if (!key) return '';
+    const dim = constants.DIMENSIONS[key];
+    return dim ? dim.name : key;
   },
 
   /**

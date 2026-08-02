@@ -23,9 +23,13 @@ Page({
   },
 
   onPullDownRefresh() {
-    this._loadTip();
-    this._checkFilledStatus();
-    wx.stopPullDownRefresh();
+    // P0-7 修复：增加 try/finally 确保异常时也能停止下拉刷新动画
+    try {
+      this._loadTip();
+      this._checkFilledStatus();
+    } finally {
+      wx.stopPullDownRefresh();
+    }
   },
 
   /**
@@ -102,6 +106,7 @@ Page({
     let filledCount = 0;
 
     Object.keys(toolKeys).forEach((key) => {
+      // P0-7 修复：原代码引用未定义变量 toolTypes（应为 toolKeys），导致 ReferenceError
       const storageKey = keys[toolKeys[key].key];
       const data = db.tool.get(storageKey);
       let hasData = false;

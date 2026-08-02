@@ -45,6 +45,76 @@
     <text>{{recommendationText}}</text>
   </view>
 
+  <!-- P2-1: AI 转向检测 -->
+  <view class="ai-pivot-section">
+    <view class="section-title">AI 转向检测</view>
+    <text class="section-subtitle">基于历史评分趋势，AI 自动检测转向信号</text>
+
+    <!-- 检测按钮 -->
+    <button class="ai-pivot-btn" bindtap="onCheckPivot" disabled="{{aiPivotLoading}}">
+      <text wx:if="{{aiPivotLoading}}">检测中...</text>
+      <text wx:else>AI 转向检测</text>
+    </button>
+
+    <!-- 加载中状态 -->
+    <view class="ai-pivot-loading" wx:if="{{aiPivotLoading}}">
+      <view class="ai-pivot-spinner"></view>
+      <text class="ai-pivot-loading-text">正在分析历史评分趋势...</text>
+    </view>
+
+    <!-- 检测结果 -->
+    <block wx:if="{{aiPivotCheck && !aiPivotLoading}}">
+      <!-- 错误状态 -->
+      <view class="ai-pivot-error" wx:if="{{aiPivotCheck.error}}">
+        <text class="ai-pivot-error-text">{{aiPivotCheck.message}}</text>
+      </view>
+
+      <!-- 正常结果 -->
+      <view class="ai-pivot-result card" wx:else>
+        <!-- 信号数量摘要 -->
+        <view class="ai-pivot-header">
+          <text class="ai-pivot-count">检测到 {{aiPivotCheck.signalCount}} 个信号</text>
+          <text class="ai-pivot-source text-muted" wx:if="{{aiPivotCheck.source === 'cloud'}}">云端AI</text>
+          <text class="ai-pivot-source text-muted" wx:elif="{{aiPivotCheck.source === 'cloud-fallback'}}">云端降级</text>
+          <text class="ai-pivot-source text-muted" wx:else>本地引擎</text>
+        </view>
+
+        <!-- 无信号 -->
+        <view class="ai-pivot-empty" wx:if="{{aiPivotCheck.signalCount === 0}}">
+          <text class="ai-pivot-empty-text">暂未检测到明显的转向信号，系统运转相对稳定。</text>
+        </view>
+
+        <!-- 信号列表 -->
+        <view class="ai-signal-list" wx:if="{{aiPivotCheck.signalCount > 0}}">
+          <view class="ai-signal-item ai-signal-{{item.severity}}" wx:for="{{aiPivotCheck.signals}}" wx:key="index">
+            <view class="ai-signal-badge ai-signal-badge-{{item.severity}}">
+              <text wx:if="{{item.severity === 'danger'}}">高危</text>
+              <text wx:elif="{{item.severity === 'warning'}}">警告</text>
+              <text wx:else>提示</text>
+            </view>
+            <view class="ai-signal-body">
+              <view class="ai-signal-title">
+                <text wx:if="{{item.dimensionLabel}}">{{item.dimensionLabel}}</text>
+                <text wx:elif="{{item.type === 'consecutiveDecline'}}">连续下行</text>
+                <text wx:elif="{{item.type === 'structuralCollapse'}}">结构性崩塌</text>
+                <text wx:elif="{{item.type === 'gapWidening'}}">差距扩大</text>
+                <text wx:elif="{{item.type === 'historicalSignal'}}">历史信号</text>
+                <text wx:else>转向信号</text>
+              </view>
+              <text class="ai-signal-desc">{{item.description}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- AI 建议 -->
+        <view class="ai-pivot-recommendation" wx:if="{{aiPivotCheck.recommendation}}">
+          <view class="ai-pivot-reco-title">AI 建议</view>
+          <text class="ai-pivot-reco-text">{{aiPivotCheck.recommendation}}</text>
+        </view>
+      </view>
+    </block>
+  </view>
+
   <!-- 转向准备清单（信号>=2时显示） -->
   <block wx:if="{{showPrepList}}">
     <view class="prep-section">

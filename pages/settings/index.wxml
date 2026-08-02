@@ -41,6 +41,76 @@
     <text>AI 教练基于你的六维健康度和五因子数据，提供个性化深度解读。{{cloudEnabled ? '当前使用云端大模型，回答更精准。' : '当前使用本地引擎，开启云端模式可获得更深度分析。'}}</text>
   </view>
 
+  <!-- P2-2: AI 用量统计 -->
+  <view class="card ai-usage-card" wx:if="{{aiEnabled && aiUsage}}">
+    <view class="usage-header">
+      <text class="usage-title">AI 用量统计</text>
+      <text class="usage-reset" bindtap="onResetUsage">重置</text>
+    </view>
+    <view class="usage-grid">
+      <view class="usage-item">
+        <text class="usage-num">{{aiUsage.totalCalls}}</text>
+        <text class="usage-label">总调用</text>
+      </view>
+      <view class="usage-item">
+        <text class="usage-num">{{aiUsage.cloudCalls}}</text>
+        <text class="usage-label">云端</text>
+      </view>
+      <view class="usage-item">
+        <text class="usage-num">{{aiUsage.localCalls}}</text>
+        <text class="usage-label">本地</text>
+      </view>
+    </view>
+    <view class="usage-breakdown" wx:if="{{aiUsage.byAction}}">
+      <view class="breakdown-row">
+        <text class="breakdown-label">周度解读</text>
+        <text class="breakdown-val">{{aiUsage.byAction.weeklyInsight || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">对话辅导</text>
+        <text class="breakdown-val">{{aiUsage.byAction.coachChat || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">目标引导</text>
+        <text class="breakdown-val">{{aiUsage.byAction.goalGuidance || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">每日解读</text>
+        <text class="breakdown-val">{{aiUsage.byAction.dailyReflect || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">季度总结</text>
+        <text class="breakdown-val">{{aiUsage.byAction.quarterlySummary || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">转向检测</text>
+        <text class="breakdown-val">{{aiUsage.byAction.pivotCheck || 0}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- P2-2: 订阅消息推送 -->
+  <view class="section-title" wx:if="{{aiEnabled}}">消息推送</view>
+  <view class="card" wx:if="{{aiEnabled}}">
+    <view class="list-item" bindtap="onSubscribeWeekly">
+      <view class="item-label">
+        <text class="row-title">周评提醒</text>
+        <text class="row-desc text-muted">每周提醒你完成六维自评</text>
+      </view>
+      <text class="time-arrow text-muted">></text>
+    </view>
+    <view class="list-item" bindtap="onSubscribeBottomline">
+      <view class="item-label">
+        <text class="row-title">底线告警</text>
+        <text class="row-desc text-muted">健康度跌破底线时推送提醒</text>
+      </view>
+      <text class="time-arrow text-muted">></text>
+    </view>
+  </view>
+  <view class="callout callout-info" wx:if="{{aiEnabled}}">
+    <text>订阅消息需微信授权，每次授权可接收一条推送。点击对应项目进行授权。</text>
+  </view>
+
   <!-- 关于 -->
   <view class="section-title">关于</view>
   <view class="card">

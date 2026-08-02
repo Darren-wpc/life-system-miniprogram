@@ -37,6 +37,7 @@ Page({
     const quarterly = db.quarterly.getAll();
     const narrative = db.narrative.getAll();
     const pivot = db.pivot.getAll();
+    const resources = db.resources.get();
     const toolCount = this._countTools();
     const transformCount = db.transform.getAll().length;
     const aiChatCount = ai.getChatHistory().length;
@@ -44,6 +45,7 @@ Page({
     const categories = [
       { key: 'weekly', name: '六维周评', count: weekly.length, desc: '每周一次的健康度自评' },
       { key: 'factors', name: '五因子评分', count: factors.length, desc: '标准 / 行动 / 资源 / 反馈 / 不确定性' },
+      { key: 'resources', name: '资源盘点', count: resources ? 1 : 0, desc: '七类资源指标与关系层级数据' },
       { key: 'daily', name: '日级反馈', count: daily.length, desc: '每日能量与情绪记录' },
       { key: 'quarterly', name: '季级复盘', count: quarterly.length, desc: '每季度回顾与下季计划' },
       { key: 'narrative', name: '叙事记录', count: narrative.length, desc: '叙事一致性三问' },
@@ -164,15 +166,17 @@ Page({
   /**
    * 组装导出数据对象
    * P1-10: 补充导出资源转化记录
+   * P0-8: 补充导出资源盘点数据
    */
   _buildExportData() {
     const keys = db.tool.getKeys();
     return {
-      appVersion: 'v2.0.0',
+      appVersion: 'v2.2.0',
       schemaVersion: 2,
       exportTime: this._formatTime(Date.now()),
       weekly: db.weekly.getAll(),
       factors: db.factors.getAll(),
+      resources: db.resources.get(),
       daily: db.daily.getDays(999),
       quarterly: db.quarterly.getAll(),
       narrative: db.narrative.getAll(),

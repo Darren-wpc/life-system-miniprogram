@@ -6,12 +6,44 @@
       <text class="header-title">AI 教练</text>
       <text class="header-subtitle">基于人生系统框架的个性化指导</text>
     </view>
-    <view
-      class="clear-btn"
-      wx:if="{{aiEnabled && hasData && messages.length > 0}}"
-      bindtap="clearChat"
-    >
-      清空对话
+    <view class="header-actions">
+      <view
+        class="goal-btn"
+        wx:if="{{aiEnabled && hasData}}"
+        bindtap="openGoalModal"
+      >
+        🎯 目标引导
+      </view>
+      <view
+        class="clear-btn"
+        wx:if="{{aiEnabled && hasData && messages.length > 0}}"
+        bindtap="clearChat"
+      >
+        清空
+      </view>
+    </view>
+  </view>
+
+  <!-- 目标引导弹窗 -->
+  <view class="modal-mask" wx:if="{{showGoalModal}}" bindtap="closeGoalModal">
+    <view class="modal-content" catchtap="noop">
+      <view class="modal-title">🎯 目标引导</view>
+      <view class="modal-desc">输入你的目标或诉求，AI 教练将基于你的六维状态和五要素框架，帮你拆解行动路径。</view>
+      <textarea
+        class="goal-textarea"
+        placeholder="例如：我想在3个月内提升身体素质..."
+        placeholder-class="textarea-placeholder"
+        value="{{goalInput}}"
+        bindinput="onGoalInput"
+        maxlength="200"
+        auto-height
+      />
+      <view class="modal-actions">
+        <view class="modal-btn modal-cancel" bindtap="closeGoalModal">取消</view>
+        <view class="modal-btn modal-confirm {{(!goalInput.trim() || sending) ? 'btn-disabled' : ''}}" bindtap="submitGoal">
+          {{sending ? '分析中...' : '开始引导'}}
+        </view>
+      </view>
     </view>
   </view>
 
@@ -54,7 +86,7 @@
           wx:key="index"
           class="msg-row {{item.role === 'user' ? 'msg-row-right' : 'msg-row-left'}}"
         >
-          <view class="msg-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
+          <view class="msg-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}} {{item.typing ? 'typing-bubble' : ''}}">
             <text user-select="{{true}}" decode="{{true}}">{{item.content}}</text>
           </view>
         </view>

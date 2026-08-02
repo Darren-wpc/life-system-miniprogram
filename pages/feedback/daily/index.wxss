@@ -120,6 +120,78 @@
   word-break: break-all;
 }
 
+/* P1-1: AI 每日解读卡片 */
+.ai-reflect-card {
+  border-left: 6rpx solid var(--primary);
+  margin-top: 16rpx;
+}
+
+.ai-reflect-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.ai-reflect-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+.ai-reflect-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.ai-reflect-body {
+  padding: 4rpx 0;
+}
+
+.ai-reflect-text {
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.ai-reflect-loading {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 8rpx 0;
+}
+
+.ai-reflect-loading .loading-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: ai-loading-bounce 1.4s ease-in-out infinite both;
+}
+
+.ai-reflect-loading .loading-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.ai-reflect-loading .loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ai-reflect-loading .loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes ai-loading-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* 输入卡片 */
 .input-card {
   padding-bottom: 24rpx;

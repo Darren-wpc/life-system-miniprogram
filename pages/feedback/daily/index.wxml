@@ -39,6 +39,24 @@
       </view>
       <view class="done-text">{{todayRecord.text}}</view>
     </view>
+
+    <!-- P1-1: AI 每日解读 -->
+    <view class="card ai-reflect-card" wx:if="{{aiReflect || aiReflectLoading}}">
+      <view class="ai-reflect-header">
+        <text class="ai-reflect-icon">🤖</text>
+        <text class="ai-reflect-title">AI 解读</text>
+      </view>
+      <view class="ai-reflect-body" wx:if="{{aiReflectLoading}}">
+        <view class="ai-reflect-loading">
+          <view class="loading-dot"></view>
+          <view class="loading-dot"></view>
+          <view class="loading-dot"></view>
+        </view>
+      </view>
+      <view class="ai-reflect-body" wx:else>
+        <text class="ai-reflect-text" decode="{{true}}">{{aiReflect}}</text>
+      </view>
+    </view>
   </block>
 
   <block wx:else>

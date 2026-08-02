@@ -46,6 +46,9 @@ const LEVEL_KEYS = ['L1', 'L2', 'L3', 'L4'];
 // P3-7: 资源转化下拉选项键
 const RESOURCE_KEYS = ['money', 'time', 'health', 'relationship', 'capability', 'info', 'psychology'];
 
+// P1-9: 反向指标（值越低越好），归一化时需反转 1-5 量纲
+const INVERTED_METRICS = ['stressLevel'];
+
 // 金钱资源指标独立归一化（量纲不同，不能混用同一公式）
 function _normalizeMoneyMetric(metricKey, num) {
   switch (metricKey) {
@@ -77,6 +80,9 @@ function getHealthStatus(resourceKey, metrics) {
         // 归一化到 0-5 分
         if (resourceKey === 'money') {
           totalScore += _normalizeMoneyMetric(m.key, num);
+        } else if (INVERTED_METRICS.indexOf(m.key) >= 0) {
+          // P1-9: 反向指标（值越低越好，如压力水平），反转 1-5 量纲：5→0, 1→4
+          totalScore += Math.max(0, Math.min(5, 5 - num));
         } else {
           totalScore += Math.min(5, num);
         }
@@ -88,8 +94,9 @@ function getHealthStatus(resourceKey, metrics) {
   if (count === 0) return 'yellow';
 
   const avgScore = totalScore / count;
-  if (avgScore >= 3.5) return 'green';
-  if (avgScore >= 2) return 'yellow';
+  // P2-17: 使用 HEALTH_THRESHOLDS 常量替代硬编码阈值
+  if (avgScore >= constants.HEALTH_THRESHOLDS.RESOURCE_GREEN) return 'green';
+  if (avgScore >= constants.HEALTH_THRESHOLDS.RESOURCE_YELLOW) return 'yellow';
   return 'red';
 }
 

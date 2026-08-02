@@ -91,6 +91,78 @@
         </text>
       </view>
     </view>
+
+    <!-- P1-2: AI 季度总结卡片 -->
+    <view class="card ai-summary-card" wx:if="{{aiSummary || aiSummaryLoading}}">
+      <view class="ai-summary-header">
+        <text class="ai-summary-icon">🤖</text>
+        <text class="ai-summary-title">AI 季度总结</text>
+      </view>
+
+      <!-- 加载中动画 -->
+      <view class="ai-summary-body" wx:if="{{aiSummaryLoading}}">
+        <view class="ai-summary-loading">
+          <view class="loading-dot"></view>
+          <view class="loading-dot"></view>
+          <view class="loading-dot"></view>
+        </view>
+        <text class="ai-summary-loading-text">正在生成季度总结...</text>
+      </view>
+
+      <!-- 总结内容 -->
+      <view class="ai-summary-body" wx:elif="{{aiSummary}}">
+        <!-- 总体评估 -->
+        <view class="ai-summary-section" wx:if="{{aiSummary.summary}}">
+          <text class="ai-section-label">总体评估</text>
+          <text class="ai-section-text">{{aiSummary.summary}}</text>
+        </view>
+
+        <!-- 趋势分析 -->
+        <view class="ai-summary-section" wx:if="{{aiSummary.trends && aiSummary.trends.length > 0}}">
+          <text class="ai-section-label">维度趋势</text>
+          <view class="ai-trend-list">
+            <view class="ai-trend-item" wx:for="{{aiSummary.trends}}" wx:key="dimension">
+              <text class="ai-trend-label">{{item.label}}</text>
+              <text class="ai-trend-value ai-trend-{{item.direction}}">
+                {{item.direction === 'up' ? '↑' : item.direction === 'down' ? '↓' : '→'}}
+                {{item.from}}→{{item.to}}
+                ({{item.change > 0 ? '+' : ''}}{{item.change}})
+              </text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 关键发现 -->
+        <view class="ai-summary-section" wx:if="{{aiSummary.keyFindings && aiSummary.keyFindings.length > 0}}">
+          <text class="ai-section-label">关键发现</text>
+          <view class="ai-finding-list">
+            <view class="ai-finding-item ai-finding-{{item.type}}" wx:for="{{aiSummary.keyFindings}}" wx:key="title">
+              <text class="ai-finding-title">{{item.title}}</text>
+              <text class="ai-finding-text">{{item.text}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 下季度建议 -->
+        <view class="ai-summary-section" wx:if="{{aiSummary.recommendations && aiSummary.recommendations.length > 0}}">
+          <text class="ai-section-label">下季度建议</text>
+          <view class="ai-recommend-list">
+            <view class="ai-recommend-item" wx:for="{{aiSummary.recommendations}}" wx:key="title">
+              <view class="ai-recommend-header">
+                <text class="ai-recommend-priority ai-priority-{{item.priority}}">{{item.priority === 'high' ? '高' : item.priority === 'medium' ? '中' : '低'}}</text>
+                <text class="ai-recommend-title">{{item.title}}</text>
+              </view>
+              <text class="ai-recommend-text">{{item.text}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 来源标记 -->
+        <view class="ai-summary-source" wx:if="{{aiSummary.source}}">
+          <text class="ai-source-tag">{{aiSummary.source === 'cloud' ? '云端 AI' : aiSummary.source === 'cloud-fallback' ? '云端降级' : '本地引擎'}}</text>
+        </view>
+      </view>
+    </view>
   </block>
 
   <!-- 未完成：输入表单 -->

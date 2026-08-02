@@ -93,11 +93,13 @@ const COLORS = {
   EMPTY_AXIS: '#e2e8f0'
 };
 
-// P2-14: 集中管理健康度阈值
+// P2-14/P2-17: 集中管理健康度阈值
 const HEALTH_THRESHOLDS = {
-  GREEN: 4,
-  YELLOW: 2,
-  RED: 0
+  GREEN: 4,            // 六维健康度：≥4 为绿色
+  YELLOW: 2,           // 六维健康度：≥2 为黄色
+  RED: 0,              // 六维健康度：<2 为红色
+  RESOURCE_GREEN: 3.5, // 资源健康度：≥3.5 为绿色（70%阈值）
+  RESOURCE_YELLOW: 2    // 资源健康度：≥2 为黄色
 };
 
 // P2-14: 集中管理列表存储上限

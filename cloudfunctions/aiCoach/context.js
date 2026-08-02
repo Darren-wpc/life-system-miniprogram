@@ -309,10 +309,288 @@ const assembleGoalContext = (userData = {}, message) => {
   return parts.join('\n')
 }
 
+// ---------------------------------------------------------------------------
+// 对外函数 4：每日一句话解读上下文
+// ---------------------------------------------------------------------------
+
+/**
+ * 组装每日反馈上下文
+ * @param {Object} todayRecord - 今日记录 { text, moodEmoji }
+ * @param {Array} recentDays - 最近7天记录 [{ moodEmoji, text }]
+ * @param {Object} weeklyScores - 本周六维评分（可选）
+ * @returns {string}
+ */
+const assembleDailyContext = (todayRecord, recentDays = [], weeklyScores = null) => {
+  const parts = []
+
+  parts.push('【今日记录】')
+  if (todayRecord) {
+    parts.push(`心情：${todayRecord.moodEmoji || '未选择'}`)
+    parts.push(`内容：${todayRecord.text || '（无文字记录）'}`)
+  } else {
+    parts.push('（今日无记录）')
+  }
+
+  parts.push('\n【近7天心情序列】')
+  if (recentDays && recentDays.length > 0) {
+    const moods = recentDays.map(d => d.moodEmoji || '❓').join(' → ')
+    parts.push(moods)
+  } else {
+    parts.push('（无历史数据）')
+  }
+
+  parts.push('\n【本周六维评分】')
+  parts.push(formatScores(weeklyScores))
+
+  const summary = computeSummary(weeklyScores)
+  if (summary) {
+    parts.push(`\n【评分摘要】`)
+    parts.push(`均值 ${summary.avg}；最低维度：${summary.lowest.label}（${summary.lowest.score}）`)
+  }
+
+  parts.push('\n【任务说明】')
+  parts.push('请生成一句话解读（50字以内），识别能量趋势和情绪模式，给出温和的引导。只返回一句话，不需要 JSON 结构。')
+
+  return parts.join('\n')
+}
+
+// ---------------------------------------------------------------------------
+// 对外函数 5：季度复盘总结上下文
+// ---------------------------------------------------------------------------
+
+/**
+ * 组装季度复盘总结上下文
+ * @param {Object} reviewData - 季度复盘数据
+ *   - collapseText      崩溃点检视
+ *   - leverageText      杠杆点检视
+ *   - imbalanceText     失衡点检视
+ *   - sustainableText   可持续性检视
+ *   - standardUpdateText 标准更新思考
+ *   - focusFactor       下季度聚焦因子 key
+ * @param {Array} weeklyList - 本季度周评分数数组（最多 13 条，按时间倒序）
+ * @param {Array} factorsList - 因子数据数组
+ * @returns {string} 组装好的上下文文本
+ */
+const assembleQuarterlyContext = (reviewData = {}, weeklyList = [], factorsList = []) => {
+  const parts = []
+
+  // 1. 四个结构检视
+  parts.push('【季度结构检视】')
+  parts.push(`崩溃点检视（哪个维度的崩塌会把一切拖下去）：${reviewData.collapseText || '（未填写）'}`)
+  parts.push(`杠杆点检视（改善哪个维度能带动其他维度）：${reviewData.leverageText || '（未填写）'}`)
+  parts.push(`失衡点检视（是否有某个维度过强，压制了其他维度）：${reviewData.imbalanceText || '（未填写）'}`)
+  parts.push(`可持续性检视（当前的生活方式能再坚持一年吗）：${reviewData.sustainableText || '（未填写）'}`)
+
+  // 2. 两个框架问题
+  parts.push('\n【框架更新】')
+  parts.push(`标准更新思考（本季度标准需要更新吗）：${reviewData.standardUpdateText || '（未填写）'}`)
+  const focusFactorMeta = reviewData.focusFactor ? FACTORS[reviewData.focusFactor] : null
+  parts.push(`下季度聚焦因子：${focusFactorMeta ? `${focusFactorMeta.label}（${reviewData.focusFactor}）—— ${focusFactorMeta.desc}` : '（未选择）'}`)
+
+  // 3. 本季度周评趋势
+  parts.push('\n【本季度周评分趋势】')
+  if (weeklyList && weeklyList.length > 0) {
+    parts.push(`共 ${weeklyList.length} 周评分记录（按时间倒序排列）：`)
+    const trendLines = weeklyList.map((w, i) => {
+      const weekNum = weeklyList.length - i
+      const scores = DIMENSION_KEYS.map((key) => {
+        const score = safeNum(w[key], null)
+        return score === null ? '—' : `${score}`
+      })
+      return `第${weekNum}周：${DIMENSION_KEYS.map((k, j) => `${DIMENSIONS[k].label}${scores[j]}`).join('，')}`
+    })
+    parts.push(trendLines.join('\n'))
+
+    // 计算季度均值与变化
+    if (weeklyList.length >= 2) {
+      const latest = weeklyList[0]
+      const oldest = weeklyList[weeklyList.length - 1]
+      const summary = computeSummary(latest)
+      if (summary) {
+        parts.push(`\n最新一周均值 ${summary.avg}；最低维度：${summary.lowest.label}（${summary.lowest.score}）；最高维度：${summary.highest.label}（${summary.highest.score}）。`)
+      }
+
+      // 各维度季度变化
+      const changeLines = DIMENSION_KEYS.map((key) => {
+        const latestScore = safeNum(latest[key], null)
+        const oldestScore = safeNum(oldest[key], null)
+        if (latestScore === null || oldestScore === null) return null
+        const diff = +(latestScore - oldestScore).toFixed(1)
+        const dir = diff > 0.5 ? '↑上升' : diff < -0.5 ? '↓下降' : '→持平'
+        return `- ${DIMENSIONS[key].label}（${key}）：${oldestScore} → ${latestScore}（${dir}，${diff > 0 ? '+' : ''}${diff}）`
+      }).filter(Boolean)
+      if (changeLines.length > 0) {
+        parts.push('\n各维度季度变化：')
+        parts.push(changeLines.join('\n'))
+      }
+    }
+  } else {
+    parts.push('（本季度无周评数据）')
+  }
+
+  // 4. 要素数据
+  parts.push('\n【五要素状态（最近一条）】')
+  if (factorsList && factorsList.length > 0) {
+    parts.push(formatFactors(factorsList[0]))
+  } else {
+    parts.push('（无要素数据）')
+  }
+
+  // 5. 任务说明
+  parts.push('\n【任务说明】')
+  parts.push('请基于上述季度复盘数据生成本季度总结，输出 JSON 格式，包含以下字段：')
+  parts.push('- summary: 2-3 句总体评估，概括本季度系统运转状态与核心发现')
+  parts.push('- trends: 数组，每个元素包含 dimension（维度 key）、label（中文名）、direction（up/down/stable）、change（数值变化）、from、to')
+  parts.push('- keyFindings: 数组，基于复盘数据和周评趋势的关键发现，每个元素包含 type（danger/leverage/warning/info/success）、title、text')
+  parts.push('- recommendations: 数组，下季度可执行建议，每个元素包含 title、text、priority（high/medium/low）、factor（关联要素 key）')
+  parts.push('只输出 JSON 本身，确保可被 JSON.parse 直接解析。')
+
+  return parts.join('\n')
+}
+
+// ---------------------------------------------------------------------------
+// 对外函数 6：转向信号检测上下文
+// ---------------------------------------------------------------------------
+
+/**
+ * 组装转向信号检测上下文
+ * @param {Array} weeklyList - 周评分数组（按时间正序，最旧在前）
+ * @param {Array} pivotRecords - 已有的转向信号记录数组（newest-first）
+ * @returns {string} 组装好的上下文文本
+ */
+const assemblePivotContext = (weeklyList = [], pivotRecords = []) => {
+  const parts = []
+
+  // 1. 周评分趋势（最多 13 周）
+  parts.push('【最近周评分趋势】')
+  if (weeklyList && weeklyList.length > 0) {
+    parts.push(`共 ${weeklyList.length} 周评分记录（按时间正序，最旧在前）：`)
+    const trendLines = weeklyList.map((w, i) => {
+      const weekNum = i + 1
+      const scores = DIMENSION_KEYS.map((key) => {
+        const score = safeNum(w[key], null)
+        return score === null ? '—' : `${score}`
+      })
+      const overall = DIMENSION_KEYS.reduce((sum, key) => sum + safeNum(w[key], 0), 0) / DIMENSION_KEYS.length
+      return `第${weekNum}周：${DIMENSION_KEYS.map((k, j) => `${DIMENSIONS[k].label}${scores[j]}`).join('，')}（均值 ${overall.toFixed(1)}）`
+    })
+    parts.push(trendLines.join('\n'))
+
+    // 计算趋势变化
+    if (weeklyList.length >= 2) {
+      const latest = weeklyList[weeklyList.length - 1]
+      const oldest = weeklyList[0]
+      const latestOverall = DIMENSION_KEYS.reduce((sum, key) => sum + safeNum(latest[key], 0), 0) / DIMENSION_KEYS.length
+      const oldestOverall = DIMENSION_KEYS.reduce((sum, key) => sum + safeNum(oldest[key], 0), 0) / DIMENSION_KEYS.length
+      const diff = +(latestOverall - oldestOverall).toFixed(1)
+      const dir = diff > 0.3 ? '↑上升' : diff < -0.3 ? '↓下降' : '→持平'
+      parts.push(`\n趋势：最早一周均值 ${oldestOverall.toFixed(1)} → 最新一周均值 ${latestOverall.toFixed(1)}（${dir}，${diff > 0 ? '+' : ''}${diff}）`)
+
+      // 各维度变化
+      const changeLines = DIMENSION_KEYS.map((key) => {
+        const latestScore = safeNum(latest[key], null)
+        const oldestScore = safeNum(oldest[key], null)
+        if (latestScore === null || oldestScore === null) return null
+        const dimDiff = +(latestScore - oldestScore).toFixed(1)
+        const dimDir = dimDiff > 0.5 ? '↑' : dimDiff < -0.5 ? '↓' : '→'
+        return `- ${DIMENSIONS[key].label}（${key}）：${oldestScore} → ${latestScore}（${dimDir}，${dimDiff > 0 ? '+' : ''}${dimDiff}）`
+      }).filter(Boolean)
+      if (changeLines.length > 0) {
+        parts.push('\n各维度变化：')
+        parts.push(changeLines.join('\n'))
+      }
+
+      // 检测连续下行
+      const overallTrend = weeklyList.map((w) => DIMENSION_KEYS.reduce((sum, key) => sum + safeNum(w[key], 0), 0) / DIMENSION_KEYS.length)
+      let declineStreak = 0
+      for (let i = overallTrend.length - 1; i >= 1; i--) {
+        if (overallTrend[i] < overallTrend[i - 1]) declineStreak++
+        else break
+      }
+      if (declineStreak >= 2) {
+        parts.push(`\n⚠ 综合健康度已连续 ${declineStreak} 周下行`)
+      }
+
+      // 检测重复低位
+      DIMENSION_KEYS.forEach((key) => {
+        let lowStreak = 0
+        let maxLowStreak = 0
+        for (let i = weeklyList.length - 1; i >= 0; i--) {
+          const score = safeNum(weeklyList[i][key], null)
+          if (score !== null && score <= 2) {
+            lowStreak++
+            maxLowStreak = Math.max(maxLowStreak, lowStreak)
+          } else {
+            lowStreak = 0
+          }
+        }
+        if (maxLowStreak >= 3) {
+          parts.push(`\n⚠ ${DIMENSIONS[key].label}连续 ${maxLowStreak} 周得分 ≤2`)
+        }
+      })
+
+      // 检测结构性崩塌（最新一周）
+      const latestLowDims = DIMENSION_KEYS.filter((key) => safeNum(latest[key], null) !== null && safeNum(latest[key], 0) <= 2)
+      if (latestLowDims.length >= 3) {
+        parts.push(`\n⚠ 最新一周有 ${latestLowDims.length} 个维度低于 2 分：${latestLowDims.map((k) => DIMENSIONS[k].label).join('、')}`)
+      }
+
+      // 检测差距扩大
+      const gaps = weeklyList.map((w) => {
+        const scores = DIMENSION_KEYS.map((k) => safeNum(w[k], 0))
+        return Math.max(...scores) - Math.min(...scores)
+      })
+      let gapWideningStreak = 0
+      for (let i = gaps.length - 1; i >= 1; i--) {
+        if (gaps[i] > gaps[i - 1]) gapWideningStreak++
+        else break
+      }
+      if (gapWideningStreak >= 3) {
+        parts.push(`\n⚠ 维度间差距连续 ${gapWideningStreak} 周扩大（极差从 ${gaps[gaps.length - 1 - gapWideningStreak]} 到 ${gaps[gaps.length - 1]}）`)
+      }
+    }
+  } else {
+    parts.push('（无周评数据）')
+  }
+
+  // 2. 已有转向信号记录
+  parts.push('\n【已有转向信号记录】')
+  if (pivotRecords && pivotRecords.length > 0) {
+    parts.push(`共 ${pivotRecords.length} 条历史记录（newest-first）：`)
+    const recordLines = pivotRecords.slice(0, 5).map((r, i) => {
+      const checkedSignals = r.checkedSignals || []
+      const checkedCount = r.checkedCount || checkedSignals.length
+      const recommendationLevel = r.recommendationLevel || 'unknown'
+      return `- 记录${i + 1}（${r.id || r.date || '未知日期'}）：勾选 ${checkedCount} 个信号，推荐级别 ${recommendationLevel}`
+    })
+    parts.push(recordLines.join('\n'))
+  } else {
+    parts.push('（无历史转向信号记录）')
+  }
+
+  // 3. 任务说明
+  parts.push('\n【任务说明】')
+  parts.push('请基于上述历史评分趋势和已有转向信号记录，检测以下四类转向信号：')
+  parts.push('1. consecutiveDecline（连续下行）：综合健康度连续 2+ 周下降')
+  parts.push('2. repeatedLow（重复低位）：同一维度连续 3+ 周得分 ≤2')
+  parts.push('3. structuralCollapse（结构性崩塌）：单周内 3+ 维度低于 2 分')
+  parts.push('4. gapWidening（差距扩大）：维度间极差连续 3+ 周扩大')
+  parts.push('')
+  parts.push('输出 JSON 格式，包含以下字段：')
+  parts.push('- signals: 数组，每个元素包含 type（信号类型）、dimension（关联维度 key，无则 null）、severity（danger/warning/info）、description（信号描述）')
+  parts.push('- recommendation: 字符串，基于检测到的信号给出综合建议')
+  parts.push('只输出 JSON 本身，确保可被 JSON.parse 直接解析。')
+
+  return parts.join('\n')
+}
+
 module.exports = {
   assembleWeeklyContext,
   assembleCoachContext,
   assembleGoalContext,
+  assembleDailyContext,
+  assembleQuarterlyContext,
+  assemblePivotContext,
   // 导出元数据与辅助函数供其他模块复用
   DIMENSIONS,
   FACTORS,

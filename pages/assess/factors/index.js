@@ -46,22 +46,22 @@ Page({
   },
 
   _calcResult() {
-    var scores = this.data.scores;
-    var product = diagnosis.calcProduct(scores);
-    var productPercent = Math.round(product * 100);
-    var bottleneckKey = diagnosis.findBottleneckFactor(scores);
-    var bottleneckName = bottleneckKey ? constants.FACTORS[bottleneckKey].name : '';
-    var bottleneckValue = bottleneckKey ? parseFloat(scores[bottleneckKey].toFixed(2)) : 0;
+    const scores = this.data.scores;
+    const product = diagnosis.calcProduct(scores);
+    const productPercent = Math.round(product * 100);
+    const bottleneckKey = diagnosis.findBottleneckFactor(scores);
+    const bottleneckName = bottleneckKey ? constants.FACTORS[bottleneckKey].name : '';
+    const bottleneckValue = bottleneckKey ? parseFloat(scores[bottleneckKey].toFixed(2)) : 0;
 
     // 格式化因子分数为最多2位小数
-    var displayScores = {};
-    constants.FACTOR_KEYS.forEach(function (key) {
+    const displayScores = {};
+    constants.FACTOR_KEYS.forEach(key => {
       displayScores[key] = parseFloat(parseFloat(scores[key]).toFixed(2));
     });
 
-    var prediction = null;
+    let prediction = null;
     if (bottleneckKey && scores[bottleneckKey] < 0.5) {
-      var pred = diagnosis.predictImprovement(scores, 0.5);
+      const pred = diagnosis.predictImprovement(scores, 0.5);
       if (pred) {
         prediction = {
           factorName: bottleneckName,
@@ -75,7 +75,7 @@ Page({
     }
 
     this.setData({
-      displayScores: displayScores,
+      displayScores,
       product: parseFloat(product.toFixed(2)),
       productPercent,
       bottleneckKey,

@@ -1,6 +1,7 @@
 // pages/feedback/daily/index.js
 const db = require('../../../utils/db');
 const constants = require('../../../utils/constants');
+const ai = require('../../../utils/ai');
 
 Page({
   data: {
@@ -16,7 +17,10 @@ Page({
     // P2-10: 低谷期降级 - 连续3天负面心情时启用简化记录
     isLowPeriod: false,
     // P2-10: 是否切换回完整模式
-    showFullMode: false
+    showFullMode: false,
+    // P1-1: AI 每日解读
+    aiReflect: '',
+    aiReflectLoading: false
   },
 
   // P1-4: 数据加载统一放 onShow
@@ -98,6 +102,8 @@ Page({
       });
       wx.showToast({ title: '记录成功', icon: 'success' });
       this._loadData();
+      // P1-1: 触发 AI 每日解读
+      this._triggerAIReflect({ text: inputText.trim(), moodEmoji: selectedMood });
     } catch (err) {
       console.error('daily save error:', err);
       wx.showToast({ title: '保存失败', icon: 'none' });
@@ -122,12 +128,29 @@ Page({
       });
       wx.showToast({ title: '记录成功', icon: 'success' });
       this._loadData();
+      // P1-1: 触发 AI 每日解读
+      this._triggerAIReflect({ text: text, moodEmoji: mood });
     } catch (err) {
       console.error('daily simple save error:', err);
       wx.showToast({ title: '保存失败', icon: 'none' });
     } finally {
       this.setData({ saving: false });
     }
+  },
+
+  /**
+   * P1-1: 触发 AI 每日解读
+   */
+  _triggerAIReflect(todayRecord) {
+    if (!ai.isEnabled()) return;
+
+    this.setData({ aiReflectLoading: true, aiReflect: '' });
+
+    ai.generateDailyReflect(todayRecord).then((reflect) => {
+      this.setData({ aiReflect: reflect || '', aiReflectLoading: false });
+    }).catch(() => {
+      this.setData({ aiReflectLoading: false });
+    });
   },
 
   // P2-10: 切换回完整记录模式

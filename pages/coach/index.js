@@ -4,7 +4,7 @@ const ai = require('../../utils/ai');
 
 Page({
   data: {
-    // 对话消息列表，格式: { role: 'user'|'ai', content: string, timestamp: number }
+    // 对话消息列表，格式: { role: 'user'|'ai', content: string, timestamp: number, typing?: boolean }
     messages: [],
     // 输入框文本
     inputText: '',
@@ -18,6 +18,9 @@ Page({
     aiEnabled: true,
     // 是否有周评数据
     hasData: false,
+    // 目标引导弹窗
+    showGoalModal: false,
+    goalInput: '',
     // 快捷建议
     suggestions: [
       '我的压力很大',
@@ -27,13 +30,28 @@ Page({
     ]
   },
 
+  // 打字机定时器引用
+  _typingTimer: null,
+
   onLoad() {
     this._loadChatHistory();
     this._refreshState();
+    // 云端可用时，异步同步对话历史
+    if (ai.isCloudAvailable()) {
+      ai.syncChatHistoryToCloud();
+    }
   },
 
   onShow() {
     this._refreshState();
+  },
+
+  onUnload() {
+    // 清理打字机定时器
+    if (this._typingTimer) {
+      clearInterval(this._typingTimer);
+      this._typingTimer = null;
+    }
   },
 
   /**
@@ -97,16 +115,9 @@ Page({
     try {
       // ai.sendChatMessage 内部会保存用户消息和 AI 回复到历史记录
       const reply = await ai.sendChatMessage(content);
-      const aiMsg = {
-        role: 'ai',
-        content: reply,
-        timestamp: Date.now()
-      };
-      this.setData({
-        messages: [...this.data.messages, aiMsg],
-        sending: false
-      });
-      this.scrollToBottom();
+
+      // 打字机效果：逐字显示 AI 回复
+      this._typewriterReply(reply);
     } catch (err) {
       console.error('coach sendMessage error:', err);
       const errMsg = {
@@ -156,6 +167,135 @@ Page({
         }
       }
     });
+  },
+
+  /**
+   * 打开目标引导弹窗
+   */
+  openGoalModal() {
+    this.setData({ showGoalModal: true, goalInput: '' });
+  },
+
+  /**
+   * 关闭目标引导弹窗
+   */
+  closeGoalModal() {
+    this.setData({ showGoalModal: false });
+  },
+
+  /**
+   * 阻止冒泡
+   */
+  noop() {},
+
+  /**
+   * 目标输入
+   */
+  onGoalInput(e) {
+    this.setData({ goalInput: e.detail.value });
+  },
+
+  /**
+   * 提交目标引导请求
+   */
+  async submitGoal() {
+    const goalText = this.data.goalInput.trim();
+    if (!goalText || this.data.sending) return;
+
+    // 关闭弹窗
+    this.setData({ showGoalModal: false });
+
+    // 显示用户目标消息
+    const userMsg = {
+      role: 'user',
+      content: '🎯 ' + goalText,
+      timestamp: Date.now()
+    };
+
+    this.setData({
+      messages: [...this.data.messages, userMsg],
+      goalInput: '',
+      sending: true
+    });
+    this.scrollToBottom();
+
+    try {
+      const reply = await ai.requestGoalGuidance(goalText);
+      this._typewriterReply(reply);
+    } catch (err) {
+      console.error('coach submitGoal error:', err);
+      const errMsg = {
+        role: 'ai',
+        content: '抱歉，目标引导生成失败，请稍后重试。',
+        timestamp: Date.now()
+      };
+      this.setData({
+        messages: [...this.data.messages, errMsg],
+        sending: false
+      });
+      this.scrollToBottom();
+    }
+  },
+
+  /**
+   * 打字机效果：逐字显示 AI 回复
+   * @param {string} fullText - AI 完整回复
+   */
+  _typewriterReply(fullText) {
+    if (!fullText) {
+      this.setData({ sending: false });
+      return;
+    }
+
+    // 先添加一条空消息
+    const msgIndex = this.data.messages.length;
+    const aiMsg = {
+      role: 'ai',
+      content: '',
+      timestamp: Date.now(),
+      typing: true
+    };
+    this.setData({
+      messages: [...this.data.messages, aiMsg],
+      sending: false
+    });
+    this.scrollToBottom();
+
+    // 逐字显示
+    let charIndex = 0;
+    const charsPerTick = 2; // 每次显示 2 个字符，提升速度感
+    const interval = 30; // 30ms 间隔
+
+    this._typingTimer = setInterval(() => {
+      charIndex += charsPerTick;
+      if (charIndex >= fullText.length) {
+        // 显示完成
+        clearInterval(this._typingTimer);
+        this._typingTimer = null;
+        const messages = [...this.data.messages];
+        messages[msgIndex] = {
+          role: 'ai',
+          content: fullText,
+          timestamp: Date.now(),
+          typing: false
+        };
+        this.setData({ messages });
+        this.scrollToBottom();
+      } else {
+        const messages = [...this.data.messages];
+        messages[msgIndex] = {
+          role: 'ai',
+          content: fullText.slice(0, charIndex),
+          timestamp: Date.now(),
+          typing: true
+        };
+        this.setData({ messages });
+        // 每 3 次更新滚动一次，减少频繁查询
+        if (charIndex % (charsPerTick * 3) === 0) {
+          this.scrollToBottom();
+        }
+      }
+    }, interval);
   },
 
   /**
