@@ -42,37 +42,70 @@
   </block>
 
   <block wx:else>
-    <!-- 输入卡片 -->
-    <view class="section-title">今日反馈</view>
-    <view class="card input-card">
-      <view class="input-question">今天哪件事让你有能量 / 让你掉电？</view>
-      <textarea
-        class="input-textarea"
-        placeholder="写下来，不评判..."
-        placeholder-class="textarea-placeholder"
-        value="{{inputText}}"
-        bindinput="onTextInput"
-        maxlength="500"
-        auto-height
-      />
-      <view class="mood-section">
-        <text class="mood-label">今天的心情</text>
-        <view class="mood-list">
+    <!-- P2-10: 低谷期简化模式 -->
+    <block wx:if="{{isLowPeriod && !showFullMode}}">
+      <view class="section-title">今日反馈</view>
+      <view class="card input-card">
+        <view class="callout callout-warning simple-callout">
+          最近状态不太好，简化记录帮你坚持
+        </view>
+        <view class="simple-mood-list">
           <view
-            class="mood-item {{selectedMood === item ? 'mood-selected' : ''}}"
-            wx:for="{{moodEmojis}}"
-            wx:key="*this"
-            data-emoji="{{item}}"
-            bindtap="onMoodSelect"
+            class="simple-mood-btn"
+            data-mood="😌"
+            data-text="今天还好"
+            bindtap="onSimpleMood"
           >
-            <text class="mood-emoji">{{item}}</text>
+            <text class="simple-mood-emoji">😌</text>
+            <text class="simple-mood-label">还好</text>
+          </view>
+          <view
+            class="simple-mood-btn"
+            data-mood="😔"
+            data-text="今天不太好"
+            bindtap="onSimpleMood"
+          >
+            <text class="simple-mood-emoji">😔</text>
+            <text class="simple-mood-label">不太好</text>
           </view>
         </view>
+        <view class="full-mode-link" bindtap="switchToFullMode">详细记录</view>
       </view>
-      <button class="btn-primary save-btn-inline" bindtap="onSave" loading="{{saving}}">
-        保存今日反馈
-      </button>
-    </view>
+    </block>
+
+    <!-- 完整输入卡片 -->
+    <block wx:else>
+      <view class="section-title">今日反馈</view>
+      <view class="card input-card">
+        <view class="input-question">今天哪件事让你有能量 / 让你掉电？</view>
+        <textarea
+          class="input-textarea"
+          placeholder="写下来，不评判..."
+          placeholder-class="textarea-placeholder"
+          value="{{inputText}}"
+          bindinput="onTextInput"
+          maxlength="500"
+          auto-height
+        />
+        <view class="mood-section">
+          <text class="mood-label">今天的心情</text>
+          <view class="mood-list">
+            <view
+              class="mood-item {{selectedMood === item ? 'mood-selected' : ''}}"
+              wx:for="{{moodEmojis}}"
+              wx:key="*this"
+              data-emoji="{{item}}"
+              bindtap="onMoodSelect"
+            >
+              <text class="mood-emoji">{{item}}</text>
+            </view>
+          </view>
+        </view>
+        <button class="btn-primary save-btn-inline" bindtap="onSave" loading="{{saving}}">
+          保存今日反馈
+        </button>
+      </view>
+    </block>
   </block>
 
   <!-- 历史时间线 -->

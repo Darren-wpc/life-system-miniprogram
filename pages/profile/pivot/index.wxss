@@ -133,6 +133,12 @@
   border-radius: 8rpx;
 }
 
+/* P1-7: 已自动检测信号标识 */
+.auto-badge.auto-detected {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
 /* 转向准备清单 */
 .prep-section {
   margin-top: 16rpx;

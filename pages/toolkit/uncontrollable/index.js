@@ -1,10 +1,6 @@
 // pages/toolkit/uncontrollable/index.js
-var db = require('../../../utils/db');
-var constants = require('../../../utils/constants');
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-}
+const db = require('../../../utils/db');
+const { generateId, haptic, confirmDelete } = require('../../../utils/common');
 
 Page({
   data: {
@@ -16,25 +12,22 @@ Page({
     canSubmit: false
   },
 
-  onLoad: function () {
+  // P1-4: 数据加载统一放 onShow
+  onShow() {
     this._loadData();
   },
 
-  onShow: function () {
-    this._loadData();
-  },
-
-  _loadData: function () {
-    var keys = db.tool.getKeys();
-    var saved = db.tool.get(keys.TOOL_UNCONTROLLABLE);
-    var items = [];
+  _loadData() {
+    const keys = db.tool.getKeys();
+    const saved = db.tool.get(keys.TOOL_UNCONTROLLABLE);
+    let items = [];
     if (saved && saved.items && Array.isArray(saved.items)) {
       items = saved.items;
     }
 
-    var controllableCount = 0;
-    var uncontrollableCount = 0;
-    items.forEach(function (item) {
+    let controllableCount = 0;
+    let uncontrollableCount = 0;
+    items.forEach((item) => {
       if (item.type === 'controllable') {
         controllableCount++;
       } else {
@@ -43,21 +36,21 @@ Page({
     });
 
     this.setData({
-      items: items,
-      controllableCount: controllableCount,
-      uncontrollableCount: uncontrollableCount
+      items,
+      controllableCount,
+      uncontrollableCount
     });
   },
 
-  _saveData: function () {
-    var keys = db.tool.getKeys();
+  _saveData() {
+    const keys = db.tool.getKeys();
     db.tool.save(keys.TOOL_UNCONTROLLABLE, { items: this.data.items });
   },
 
-  _recalcCounts: function () {
-    var controllableCount = 0;
-    var uncontrollableCount = 0;
-    this.data.items.forEach(function (item) {
+  _recalcCounts() {
+    let controllableCount = 0;
+    let uncontrollableCount = 0;
+    this.data.items.forEach((item) => {
       if (item.type === 'controllable') {
         controllableCount++;
       } else {
@@ -65,49 +58,50 @@ Page({
       }
     });
     this.setData({
-      controllableCount: controllableCount,
-      uncontrollableCount: uncontrollableCount
+      controllableCount,
+      uncontrollableCount
     });
   },
 
-  onInput: function (e) {
-    var val = e.detail.value;
+  onInput(e) {
+    const val = e.detail.value;
     this.setData({
       inputText: val,
       canSubmit: !!(val && val.trim())
     });
   },
 
-  addItem: function () {
-    var text = this.data.inputText.trim();
+  addItem() {
+    const text = this.data.inputText.trim();
     if (!text) {
       wx.showToast({ title: '请输入焦虑事项', icon: 'none' });
       return;
     }
 
-    var newItem = {
+    const newItem = {
       id: generateId(),
-      text: text,
+      text,
       type: 'uncontrollable'
     };
-    var items = this.data.items.slice();
+    const items = this.data.items.slice();
     items.unshift(newItem);
 
     this.setData({
-      items: items,
+      items,
       inputText: '',
       canSubmit: false
     });
     this._recalcCounts();
     this._saveData();
+    haptic();
     wx.showToast({ title: '已添加', icon: 'success' });
   },
 
-  toggleType: function (e) {
-    var id = e.currentTarget.dataset.id;
-    var items = this.data.items.map(function (item) {
+  toggleType(e) {
+    const id = e.currentTarget.dataset.id;
+    const items = this.data.items.map((item) => {
       if (item.id === id) {
-        var newType = item.type === 'controllable' ? 'uncontrollable' : 'controllable';
+        const newType = item.type === 'controllable' ? 'uncontrollable' : 'controllable';
         return {
           id: item.id,
           text: item.text,
@@ -116,19 +110,25 @@ Page({
       }
       return item;
     });
-    this.setData({ items: items });
+    this.setData({ items });
     this._recalcCounts();
     this._saveData();
   },
 
-  deleteItem: function (e) {
-    var id = e.currentTarget.dataset.id;
-    var items = this.data.items.filter(function (item) {
-      return item.id !== id;
+  // P1-1 修复：删除操作添加二次确认
+  deleteItem(e) {
+    const id = e.currentTarget.dataset.id;
+    // 查找被删除项用于提示
+    const targetItem = this.data.items.find((item) => item.id === id);
+    const itemName = targetItem && targetItem.text ? targetItem.text : '';
+
+    confirmDelete(itemName, () => {
+      const items = this.data.items.filter((item) => item.id !== id);
+      this.setData({ items });
+      this._recalcCounts();
+      this._saveData();
+      haptic();
+      wx.showToast({ title: '已删除', icon: 'success' });
     });
-    this.setData({ items: items });
-    this._recalcCounts();
-    this._saveData();
-    wx.showToast({ title: '已删除', icon: 'success' });
   }
 });

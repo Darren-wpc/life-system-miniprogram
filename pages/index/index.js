@@ -2,11 +2,13 @@
 
 const db = require('../../utils/db');
 const diagnosis = require('../../utils/diagnosis');
-const { DIMENSIONS, DIM_KEYS } = require('../../utils/constants');
+const { DIMENSIONS, DIM_KEYS, FACTORS, FACTOR_KEYS, RESOURCE_TYPES, COLORS } = require('../../utils/constants');
+const { haptic } = require('../../utils/common');
 
 Page({
   data: {
     hasData: false,
+    loading: true,           // P2-9: 加载状态
     currentDate: '',
     // 完成状态
     todayDone: false,
@@ -15,24 +17,31 @@ Page({
     dailyStreak: 0,
     // 雷达图
     overallHealth: '0.0',
-    overallStatus: 'green', // green / yellow / red
+    overallStatus: 'green',
     // 维度卡片
     dimensionCards: [],
     activeDim: null,
     // 洞察
     insights: [],
+    // P1-5: 五因子数据
+    factorProduct: 0,
+    factorProductPercent: 0,
+    factorBottleneck: '',
+    hasFactorData: false,
+    // P1-5: 资源数据
+    resourceFilled: 0,
+    resourceTotal: 7,
+    hasResourceData: false,
     // 周对比弹窗
     showWeekModal: false,
     compareWeekId: '',
     weekList: []
   },
 
-  onLoad() {
-    this._loadDashboardData();
-  },
+  // P2-1: Canvas 2D 非响应式缓存
+  // _radarCenter: { x, y, maxR } — 用于 P2-2 点击检测
 
   onShow() {
-    // 每次回到页面时刷新数据（用户可能从评估页返回）
     this._loadDashboardData();
   },
 
@@ -43,6 +52,7 @@ Page({
 
   /**
    * 加载仪表盘全部数据
+   * P1-5: 同时加载五因子和资源数据，闭环接入首页
    */
   _loadDashboardData() {
     const today = new Date();
@@ -50,19 +60,22 @@ Page({
     const weekId = db.getWeekId(today);
     const quarterId = db.getQuarterId(today);
 
-    this.setData({ currentDate: dateStr });
+    this.setData({ currentDate: dateStr, loading: true });
 
     // 1. 检查完成状态
     this._checkCompletionStatus(dateStr, weekId, quarterId);
 
-    // 2. 获取最新周评数据
+    // P1-5: 获取全部评估数据（周评 + 五因子 + 资源）
     const latestScore = db.weekly.getLatest();
     const previousScore = db.weekly.getPrevious();
+    const latestFactors = db.factors.getLatest();
+    const savedResources = db.resources.get();
 
     if (!latestScore) {
-      // 无数据，显示空状态
-      this.setData({ hasData: false });
-      this._drawEmptyRadar();
+      this.setData({ hasData: false, loading: false });
+      wx.nextTick(() => {
+        this._drawEmptyRadar();
+      });
       return;
     }
 
@@ -76,12 +89,68 @@ Page({
     // 5. 运行诊断，生成洞察
     const insights = diagnosis.generateInsights(latestScore, previousScore);
 
+    // P1-5: 处理五因子数据
+    let factorProduct = 0;
+    let factorProductPercent = 0;
+    let factorBottleneck = '';
+    let hasFactorData = false;
+
+    if (latestFactors) {
+      hasFactorData = true;
+      factorProduct = diagnosis.calcProduct(latestFactors);
+      factorProductPercent = Math.round(factorProduct * 100);
+      const bottleneckKey = diagnosis.findBottleneckFactor(latestFactors);
+      if (bottleneckKey && FACTORS[bottleneckKey]) {
+        factorBottleneck = FACTORS[bottleneckKey].name;
+        // 将因子瓶颈加入洞察
+        if (latestFactors[bottleneckKey] < 0.5) {
+          insights.push({
+            type: 'warning',
+            title: '五因子瓶颈',
+            text: `「${factorBottleneck}」是当前最弱因子，提升它可大幅放大整体效能`
+          });
+        }
+      }
+    }
+
+    // P1-5: 处理资源数据
+    let resourceFilled = 0;
+    let hasResourceData = false;
+    const resourceKeys = Object.keys(RESOURCE_TYPES);
+
+    if (savedResources && savedResources.metrics) {
+      hasResourceData = true;
+      resourceKeys.forEach(key => {
+        const metrics = savedResources.metrics[key];
+        if (metrics) {
+          const hasValues = Object.values(metrics).some(v => v !== '' && v !== undefined && v !== null);
+          if (hasValues) resourceFilled++;
+        }
+      });
+
+      // 资源健康度洞察
+      if (resourceFilled <= 2) {
+        insights.push({
+          type: 'info',
+          title: '资源盘点提醒',
+          text: `仅盘点了 ${resourceFilled} 类资源，建议完善资源盘点以获得全面诊断`
+        });
+      }
+    }
+
     this.setData({
       hasData: true,
+      loading: false,
       dimensionCards,
       overallHealth,
       overallStatus,
-      insights
+      insights,
+      factorProduct: parseFloat(factorProduct.toFixed(2)),
+      factorProductPercent,
+      factorBottleneck,
+      hasFactorData,
+      resourceFilled,
+      hasResourceData
     });
 
     // 6. 绘制雷达图（延迟确保 canvas 已渲染）
@@ -106,6 +175,7 @@ Page({
 
   /**
    * 构建六维维度卡片数据
+   * P3-5: 趋势图标统一为 ↑↓→
    */
   _buildDimensionCards(current, previous) {
     return DIM_KEYS.map(key => {
@@ -113,23 +183,22 @@ Page({
       const score = current[key] || 0;
       const prevScore = previous ? (previous[key] || 0) : 0;
 
-      // 趋势
+      // P3-5: 统一趋势图标
       let trendIcon = '';
       let trendClass = '';
       if (previous) {
         if (score > prevScore) {
-          trendIcon = '^';
+          trendIcon = '↑';
           trendClass = 'trend-up';
         } else if (score < prevScore) {
-          trendIcon = 'v';
+          trendIcon = '↓';
           trendClass = 'trend-down';
         } else {
-          trendIcon = '-';
+          trendIcon = '→';
           trendClass = 'trend-flat';
         }
       }
 
-      // 状态颜色
       const status = diagnosis.getStatus(score);
       const statusClass = status === 'green' ? 'bar-green'
         : status === 'yellow' ? 'bar-yellow' : 'bar-red';
@@ -148,37 +217,42 @@ Page({
     });
   },
 
+  // ===== P2-1: Canvas 2D API 绘制 =====
+
   /**
    * 绘制雷达图（使用 Canvas 2D API）
    */
   _drawRadarChart(current, previous) {
-    // 动态获取 canvas 实际显示尺寸，保证比例正确
     const query = wx.createSelectorQuery().in(this);
-    query.select('#radarChart').boundingClientRect();
-    query.exec((res) => {
-      let w = 300;
-      let h = 300;
-      if (res && res[0] && res[0].width) {
-        w = res[0].width;
-        h = res[0].height || res[0].width;
-      }
-      this._renderRadar(current, previous, w, h);
+    query.select('#radarChart').fields({ node: true, size: true }).exec((res) => {
+      if (!res || !res[0] || !res[0].node) return;
+      const canvas = res[0].node;
+      const ctx = canvas.getContext('2d');
+      const dpr = wx.getSystemInfoSync().pixelRatio;
+      const w = res[0].width;
+      const h = res[0].height || w;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+      this._renderRadar(ctx, current, previous, w, h);
     });
   },
 
   /**
-   * 实际绘制逻辑
+   * 实际绘制逻辑（Canvas 2D API）
+   * P2-6: 使用 COLORS 常量替代硬编码色值
    */
-  _renderRadar(current, previous, w, h) {
-    const ctx = wx.createCanvasContext('radarChart', this);
+  _renderRadar(ctx, current, previous, w, h) {
     const cx = w / 2;
     const cy = h / 2;
-    // 最大半径根据实际尺寸自适应，留出标签空间
     const maxR = Math.min(w, h) * 0.36;
-    const levels = 5; // 5个刻度
+    const levels = 5;
     const dims = DIM_KEYS.length;
     const angleStep = (Math.PI * 2) / dims;
-    const startAngle = -Math.PI / 2; // 从顶部开始
+    const startAngle = -Math.PI / 2;
+
+    // P2-2: 缓存中心坐标和半径用于点击检测
+    this._radarCenter = { x: cx, y: cy, maxR };
 
     ctx.clearRect(0, 0, w, h);
 
@@ -197,13 +271,12 @@ Page({
         }
       }
       ctx.closePath();
-      ctx.setStrokeStyle('#e2e8f0');
-      ctx.setLineWidth(1);
+      ctx.strokeStyle = COLORS.RULE;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
-      // 最外层填充极浅背景
       if (i === levels) {
-        ctx.setFillStyle('rgba(248, 250, 252, 0.6)');
+        ctx.fillStyle = COLORS.GRID_FILL;
         ctx.fill();
       }
     }
@@ -214,12 +287,12 @@ Page({
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(cx + maxR * Math.cos(angle), cy + maxR * Math.sin(angle));
-      ctx.setStrokeStyle('#e2e8f0');
-      ctx.setLineWidth(1);
+      ctx.strokeStyle = COLORS.RULE;
+      ctx.lineWidth = 1;
       ctx.stroke();
     }
 
-    // 绘制上周数据（如果有，虚线效果用浅色半透明模拟）
+    // 绘制上周数据（虚线效果）
     if (previous) {
       this._drawRadarArea(ctx, cx, cy, maxR, angleStep, startAngle, previous, dims, true);
     }
@@ -227,13 +300,13 @@ Page({
     // 绘制本周数据
     this._drawRadarArea(ctx, cx, cy, maxR, angleStep, startAngle, current, dims, false);
 
-    // 绘制维度标签（字号与位置按尺寸自适应）
+    // 绘制维度标签
     const labelFont = Math.max(10, Math.round(w * 0.04));
     const labelOffset = maxR * 0.22;
-    ctx.setFontSize(labelFont);
-    ctx.setFillStyle('#1e293b');
-    ctx.setTextAlign('center');
-    ctx.setTextBaseline('middle');
+    ctx.font = `${labelFont}px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif`;
+    ctx.fillStyle = COLORS.INK;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     for (let j = 0; j < dims; j++) {
       const key = DIM_KEYS[j];
       const dim = DIMENSIONS[key];
@@ -244,24 +317,24 @@ Page({
       ctx.fillText(dim.name, x, y);
     }
 
-    // 绘制中心综合分（字号按尺寸自适应）
+    // 绘制中心综合分
     const overall = diagnosis.calcOverallHealth(current);
     const scoreFont = Math.max(18, Math.round(w * 0.075));
     const subFont = Math.max(10, Math.round(w * 0.035));
-    ctx.setFontSize(scoreFont);
-    ctx.setFillStyle('#0d9488');
-    ctx.setTextAlign('center');
-    ctx.setTextBaseline('middle');
+    ctx.font = `bold ${scoreFont}px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif`;
+    ctx.fillStyle = COLORS.PRIMARY;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillText(overall, cx, cy - w * 0.018);
-    ctx.setFontSize(subFont);
-    ctx.setFillStyle('#64748b');
+    ctx.font = `${subFont}px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif`;
+    ctx.fillStyle = COLORS.MUTED;
     ctx.fillText('综合分', cx, cy + w * 0.045);
 
-    ctx.draw();
+    // Canvas 2D API 无需调用 draw()
   },
 
   /**
-   * 绘制雷达图数据区域
+   * 绘制雷达图数据区域（Canvas 2D API）
    */
   _drawRadarArea(ctx, cx, cy, maxR, angleStep, startAngle, data, dims, isCompare) {
     ctx.beginPath();
@@ -281,22 +354,22 @@ Page({
     ctx.closePath();
 
     if (isCompare) {
-      ctx.setFillStyle('rgba(13, 148, 136, 0.08)');
+      ctx.fillStyle = COLORS.COMPARE_FILL;
       ctx.fill();
-      ctx.setStrokeStyle('rgba(13, 148, 136, 0.25)');
-      ctx.setLineWidth(2);
+      ctx.strokeStyle = COLORS.COMPARE_STROKE;
+      ctx.lineWidth = 2;
       ctx.setLineDash([6, 4]);
       ctx.stroke();
       ctx.setLineDash([]);
     } else {
-      ctx.setFillStyle('rgba(13, 148, 136, 0.18)');
+      ctx.fillStyle = COLORS.DATA_FILL;
       ctx.fill();
-      ctx.setStrokeStyle('#0d9488');
-      ctx.setLineWidth(3);
+      ctx.strokeStyle = COLORS.DATA_STROKE;
+      ctx.lineWidth = 3;
       ctx.stroke();
     }
 
-    // 绘制顶点
+    // 绘制顶点（仅当前数据）
     if (!isCompare) {
       for (let j = 0; j < dims; j++) {
         const key = DIM_KEYS[j];
@@ -308,34 +381,35 @@ Page({
 
         ctx.beginPath();
         ctx.arc(x, y, 6, 0, Math.PI * 2);
-        ctx.setFillStyle('#0d9488');
+        ctx.fillStyle = COLORS.VERTEX_FILL;
         ctx.fill();
-        ctx.setStrokeStyle('#ffffff');
-        ctx.setLineWidth(2);
+        ctx.strokeStyle = COLORS.VERTEX_STROKE;
+        ctx.lineWidth = 2;
         ctx.stroke();
       }
     }
   },
 
   /**
-   * 绘制空状态虚线雷达图
+   * 绘制空状态虚线雷达图（Canvas 2D API）
    */
   _drawEmptyRadar() {
     const query = wx.createSelectorQuery().in(this);
-    query.select('#emptyRadar').boundingClientRect();
-    query.exec((res) => {
-      let w = 150;
-      let h = 150;
-      if (res && res[0] && res[0].width) {
-        w = res[0].width;
-        h = res[0].height || res[0].width;
-      }
-      this._renderEmptyRadar(w, h);
+    query.select('#emptyRadar').fields({ node: true, size: true }).exec((res) => {
+      if (!res || !res[0] || !res[0].node) return;
+      const canvas = res[0].node;
+      const ctx = canvas.getContext('2d');
+      const dpr = wx.getSystemInfoSync().pixelRatio;
+      const w = res[0].width;
+      const h = res[0].height || w;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+      this._renderEmptyRadar(ctx, w, h);
     });
   },
 
-  _renderEmptyRadar(w, h) {
-    const ctx = wx.createCanvasContext('emptyRadar', this);
+  _renderEmptyRadar(ctx, w, h) {
     const cx = w / 2;
     const cy = h / 2;
     const maxR = Math.min(w, h) * 0.4;
@@ -345,7 +419,7 @@ Page({
 
     ctx.clearRect(0, 0, w, h);
 
-    // 绘制虚线六边形
+    // 虚线六边形
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
     for (let j = 0; j < dims; j++) {
@@ -356,45 +430,65 @@ Page({
       else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.setStrokeStyle('#cbd5e1');
-    ctx.setLineWidth(2);
+    ctx.strokeStyle = COLORS.EMPTY_STROKE;
+    ctx.lineWidth = 2;
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 绘制虚线轴
+    // 虚线轴
     for (let j = 0; j < dims; j++) {
       const angle = startAngle + j * angleStep;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(cx + maxR * Math.cos(angle), cy + maxR * Math.sin(angle));
-      ctx.setStrokeStyle('#e2e8f0');
-      ctx.setLineWidth(1);
+      ctx.strokeStyle = COLORS.EMPTY_AXIS;
+      ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
       ctx.stroke();
       ctx.setLineDash([]);
     }
-
-    ctx.draw();
   },
 
   /**
-   * 点击雷达图顶点 - 高亮对应维度卡片
+   * P2-2: 点击雷达图 - 根据触摸坐标定位维度
    */
   onRadarTap(e) {
-    const touch = e.touches && e.touches[0] || e.detail;
-    if (!touch) return;
+    const touch = e.detail;
+    if (!touch || typeof touch.x !== 'number') return;
 
-    // 简化处理：点击雷达图时依次循环高亮维度
-    const cards = this.data.dimensionCards;
-    const currentIdx = cards.findIndex(c => c.key === this.data.activeDim);
-    const nextIdx = (currentIdx + 1) % cards.length;
-    this.setData({ activeDim: cards[nextIdx].key });
+    const center = this._radarCenter;
+    if (!center) return;
+
+    const dx = touch.x - center.x;
+    const dy = touch.y - center.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    // 点击离中心太远则忽略
+    if (dist > center.maxR * 1.4) return;
+
+    // 计算角度（从顶部开始，顺时针）
+    let angle = Math.atan2(dy, dx) + Math.PI / 2;
+    if (angle < 0) angle += Math.PI * 2;
+    if (angle >= Math.PI * 2) angle -= Math.PI * 2;
+
+    // 找到最近的维度顶点
+    const dims = DIM_KEYS.length;
+    const angleStep = (Math.PI * 2) / dims;
+    const nearestIdx = Math.round(angle / angleStep) % dims;
+    const nearestKey = DIM_KEYS[nearestIdx];
+
+    // P3-4: 触觉反馈
+    haptic();
+    this.setData({
+      activeDim: this.data.activeDim === nearestKey ? null : nearestKey
+    });
   },
 
   /**
    * 长按雷达图 - 弹出历史对比选择器
    */
   onRadarLongPress() {
+    haptic();
     this._loadWeekList();
     this.setData({ showWeekModal: true });
   },
@@ -404,6 +498,7 @@ Page({
    */
   onDimTap(e) {
     const key = e.currentTarget.dataset.key;
+    haptic();
     this.setData({
       activeDim: this.data.activeDim === key ? null : key
     });
@@ -449,12 +544,11 @@ Page({
     const latestData = db.weekly.getLatest();
 
     if (compareData && latestData) {
-      // 重新绘制带对比的雷达图
+      haptic();
       wx.nextTick(() => {
         this._drawRadarChart(latestData, compareData);
       });
 
-      // 刷新维度卡片为对比数据
       const dimensionCards = this._buildDimensionCards(latestData, compareData);
       this.setData({
         compareWeekId: id,

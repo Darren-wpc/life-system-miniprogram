@@ -1,0 +1,71 @@
+/* pages/settings/index.wxss - 设置样式 */
+
+/* 列表行：主标题 + 描述 */
+.row-title {
+  display: block;
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.row-desc {
+  display: block;
+  font-size: 22rpx;
+  margin-top: 6rpx;
+  line-height: 1.4;
+}
+
+/* 时间选择器展示 */
+.time-value {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.time-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.time-arrow {
+  font-size: 24rpx;
+}
+
+/* 危险操作区标题 */
+.danger-title {
+  color: var(--danger);
+}
+
+.danger-card {
+  border: 2rpx solid var(--danger-light);
+}
+
+.danger-desc {
+  font-size: 24rpx;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 24rpx;
+}
+
+/* 危险按钮 */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.btn-danger:active {
+  opacity: 0.85;
+}
+
+.btn-danger[disabled] {
+  opacity: 0.5;
+}

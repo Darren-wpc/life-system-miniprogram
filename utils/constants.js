@@ -68,6 +68,49 @@ const TOOL_TYPES = {
 
 const MOOD_EMOJIS = ['😊', '😌', '😐', '😔', '😢'];
 
+// P2-14: 集中管理硬编码色值
+const COLORS = {
+  PRIMARY: '#0d9488',
+  PRIMARY_LIGHT: '#ccfbf1',
+  ACCENT: '#f59e0b',
+  DANGER: '#e11d48',
+  SUCCESS: '#16a34a',
+  INFO: '#2563eb',
+  INK: '#1e293b',
+  MUTED: '#64748b',
+  RULE: '#e2e8f0',
+  BG: '#f8fafc',
+  SURFACE: '#ffffff',
+  GRID_LINE: '#e2e8f0',
+  GRID_FILL: 'rgba(248, 250, 252, 0.6)',
+  COMPARE_FILL: 'rgba(13, 148, 136, 0.08)',
+  COMPARE_STROKE: 'rgba(13, 148, 136, 0.25)',
+  DATA_FILL: 'rgba(13, 148, 136, 0.18)',
+  DATA_STROKE: '#0d9488',
+  VERTEX_FILL: '#0d9488',
+  VERTEX_STROKE: '#ffffff',
+  EMPTY_STROKE: '#cbd5e1',
+  EMPTY_AXIS: '#e2e8f0'
+};
+
+// P2-14: 集中管理健康度阈值
+const HEALTH_THRESHOLDS = {
+  GREEN: 4,
+  YELLOW: 2,
+  RED: 0
+};
+
+// P2-14: 集中管理列表存储上限
+const RETENTION_DAYS = {
+  WEEKLY_SCORES: 104,
+  FACTOR_SCORES: 365,
+  DAILY_FEEDBACK: 180,
+  QUARTERLY_REVIEW: 40,
+  NARRATIVE: 40,
+  PIVOT: 40,
+  TOOL_ITEMS: 100
+};
+
 module.exports = {
   DIMENSIONS,
   DIM_KEYS,
@@ -78,5 +121,8 @@ module.exports = {
   RELATIONSHIP_LEVELS,
   PIVOT_SIGNALS,
   TOOL_TYPES,
-  MOOD_EMOJIS
+  MOOD_EMOJIS,
+  COLORS,
+  HEALTH_THRESHOLDS,
+  RETENTION_DAYS
 };

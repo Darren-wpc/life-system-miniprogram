@@ -1,5 +1,51 @@
 /* pages/toolkit/bottomline/index.wxss */
 
+/* P2-11: 底线告警区域 */
+.alert-section {
+  margin-bottom: 24rpx;
+}
+
+.alert-header {
+  margin: 0 0 16rpx 0;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.alert-item {
+  border-left: 6rpx solid var(--danger);
+}
+
+.alert-item-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.alert-item-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.alert-item-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.alert-item-bottomline {
+  font-size: 26rpx;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.alert-action-btn {
+  width: 100%;
+  margin-top: 8rpx;
+  padding: 24rpx 0;
+  font-size: 30rpx;
+  border-radius: 16rpx;
+}
+
 /* 进度条 */
 .progress-bar {
   padding: 24rpx 32rpx;

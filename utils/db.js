@@ -1,9 +1,13 @@
 // utils/db.js - 本地存储管理器
 
+// P2-8: 数据版本号
+const SCHEMA_VERSION = 2;
+
 const STORAGE_KEYS = {
   WEEKLY_SCORES: 'ls_weekly_scores',
   FACTOR_SCORES: 'ls_factor_scores',
   RESOURCES: 'ls_resources',
+  RESOURCE_TRANSFORMS: 'ls_resource_transforms',
   DAILY_FEEDBACK: 'ls_daily_feedback',
   QUARTERLY_REVIEW: 'ls_quarterly_review',
   TOOL_NOTODO: 'ls_tool_notodo',
@@ -15,7 +19,8 @@ const STORAGE_KEYS = {
   NARRATIVE: 'ls_narrative',
   PIVOT: 'ls_pivot',
   SETTINGS: 'ls_settings',
-  INITIALIZED: 'ls_initialized'
+  INITIALIZED: 'ls_initialized',
+  SCHEMA_VERSION: 'ls_schema_version'
 };
 
 // 列表存储最大保留条数（防止超 1MB 单 key / 10MB 总量限制）
@@ -25,7 +30,8 @@ const MAX_RETENTION = {
   DAILY_FEEDBACK: 180,   // 半年
   QUARTERLY_REVIEW: 40,  // 10年
   NARRATIVE: 40,
-  PIVOT: 40
+  PIVOT: 40,
+  RESOURCE_TRANSFORMS: 100  // P3-7: 资源转化记录
 };
 
 function _trimList(list, max) {
@@ -164,6 +170,32 @@ const resourceDB = {
   }
 };
 
+// ===== 资源转化追踪（P3-7）=====
+const transformDB = {
+  save(data) {
+    const list = _get(STORAGE_KEYS.RESOURCE_TRANSFORMS) || [];
+    const record = {
+      id: _getDateStr() + '-' + Date.now().toString(36),
+      date: _getDateStr(),
+      ...data,
+      createdAt: Date.now()
+    };
+    list.unshift(record);
+    _trimList(list, MAX_RETENTION.RESOURCE_TRANSFORMS);
+    _set(STORAGE_KEYS.RESOURCE_TRANSFORMS, list);
+    return record;
+  },
+  getAll() {
+    return _get(STORAGE_KEYS.RESOURCE_TRANSFORMS) || [];
+  },
+  remove(id) {
+    const list = _get(STORAGE_KEYS.RESOURCE_TRANSFORMS) || [];
+    const filtered = list.filter(r => r.id !== id);
+    _set(STORAGE_KEYS.RESOURCE_TRANSFORMS, filtered);
+    return filtered;
+  }
+};
+
 // ===== 日级反馈 =====
 const dailyDB = {
   save(data) {
@@ -194,16 +226,25 @@ const dailyDB = {
     return list.slice(0, count);
   },
 
+  // P1-8: 按周过滤获取日级反馈
+  getByWeek(weekId) {
+    const list = _get(STORAGE_KEYS.DAILY_FEEDBACK) || [];
+    if (!weekId) return list;
+    return list.filter(r => r.id >= weekId);
+  },
+
   getStreak() {
     const list = _get(STORAGE_KEYS.DAILY_FEEDBACK) || [];
     if (!list.length) return 0;
+    // P2-7: 用 Set 替代线性查找，O(365+n) → O(365)
+    const dateSet = new Set(list.map(r => r.id));
     let streak = 0;
     const today = new Date();
     for (let i = 0; i < 365; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const dateStr = _getDateStr(d);
-      if (list.find(r => r.id === dateStr)) {
+      if (dateSet.has(dateStr)) {
         streak++;
       } else if (i > 0) {
         break;
@@ -248,7 +289,18 @@ const toolDB = {
       ...data,
       updatedAt: Date.now()
     };
-    _set(toolKey, record);
+    // P2-12: items 列表长度保护
+    if (record.items && Array.isArray(record.items)) {
+      const maxItems = 100;
+      if (record.items.length > maxItems) {
+        record.items = record.items.slice(0, maxItems);
+      }
+    }
+    // P2-12: 存储异常捕获
+    const ok = _set(toolKey, record);
+    if (!ok) {
+      console.error('toolDB.save failed for key:', toolKey);
+    }
     return record;
   },
 
@@ -329,14 +381,19 @@ const settingsDB = {
 
 // ===== 初始化 =====
 function init() {
-  if (_get(STORAGE_KEYS.INITIALIZED)) return;
-  _set(STORAGE_KEYS.WEEKLY_SCORES, []);
-  _set(STORAGE_KEYS.FACTOR_SCORES, []);
-  _set(STORAGE_KEYS.DAILY_FEEDBACK, []);
-  _set(STORAGE_KEYS.QUARTERLY_REVIEW, []);
-  _set(STORAGE_KEYS.NARRATIVE, []);
-  _set(STORAGE_KEYS.PIVOT, []);
-  _set(STORAGE_KEYS.SETTINGS, { dailyReminder: '21:00' });
+  // P2-8: 数据版本号与迁移机制
+  var savedVersion = _get(STORAGE_KEYS.SCHEMA_VERSION);
+  if (!savedVersion) {
+    // 首次安装或从旧版升级
+    _set(STORAGE_KEYS.WEEKLY_SCORES, _get(STORAGE_KEYS.WEEKLY_SCORES) || []);
+    _set(STORAGE_KEYS.FACTOR_SCORES, _get(STORAGE_KEYS.FACTOR_SCORES) || []);
+    _set(STORAGE_KEYS.DAILY_FEEDBACK, _get(STORAGE_KEYS.DAILY_FEEDBACK) || []);
+    _set(STORAGE_KEYS.QUARTERLY_REVIEW, _get(STORAGE_KEYS.QUARTERLY_REVIEW) || []);
+    _set(STORAGE_KEYS.NARRATIVE, _get(STORAGE_KEYS.NARRATIVE) || []);
+    _set(STORAGE_KEYS.PIVOT, _get(STORAGE_KEYS.PIVOT) || []);
+  }
+  _set(STORAGE_KEYS.SETTINGS, _get(STORAGE_KEYS.SETTINGS) || { dailyReminder: '21:00' });
+  _set(STORAGE_KEYS.SCHEMA_VERSION, SCHEMA_VERSION);
   _set(STORAGE_KEYS.INITIALIZED, true);
 }
 
@@ -345,6 +402,7 @@ module.exports = {
   weekly: weeklyDB,
   factors: factorDB,
   resources: resourceDB,
+  transform: transformDB,
   daily: dailyDB,
   quarterly: quarterlyDB,
   tool: toolDB,

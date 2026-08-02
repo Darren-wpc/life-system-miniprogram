@@ -16,10 +16,7 @@ Page({
     saving: false
   },
 
-  onLoad() {
-    this._loadData();
-  },
-
+  // P1-4: 数据加载统一放 onShow
   onShow() {
     this._loadData();
   },
@@ -49,7 +46,6 @@ Page({
   },
 
   _calcResult() {
-    var that = this;
     var scores = this.data.scores;
     var product = diagnosis.calcProduct(scores);
     var productPercent = Math.round(product * 100);

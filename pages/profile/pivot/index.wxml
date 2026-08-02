@@ -30,7 +30,10 @@
       </view>
       <view class="signal-content">
         <text class="signal-text">{{item.text}}</text>
-        <view class="signal-auto-tag" wx:if="{{item.autoDetect}}">
+        <view class="signal-auto-tag" wx:if="{{item.autoDetected}}">
+          <text class="auto-badge auto-detected">已自动检测</text>
+        </view>
+        <view class="signal-auto-tag" wx:elif="{{item.autoDetect}}">
           <text class="auto-badge">可自动检测</text>
         </view>
       </view>

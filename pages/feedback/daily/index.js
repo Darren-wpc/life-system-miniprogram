@@ -12,13 +12,14 @@ Page({
     selectedMood: '',
     inputText: '',
     saving: false,
-    historyList: []
+    historyList: [],
+    // P2-10: 低谷期降级 - 连续3天负面心情时启用简化记录
+    isLowPeriod: false,
+    // P2-10: 是否切换回完整模式
+    showFullMode: false
   },
 
-  onLoad() {
-    this._loadData();
-  },
-
+  // P1-4: 数据加载统一放 onShow
   onShow() {
     this._loadData();
   },
@@ -42,12 +43,23 @@ Page({
     const allDays = db.daily.getDays(31);
     const historyList = allDays.filter(item => item.id !== todayStr);
 
+    // P2-10: 低谷期检测 - 最近3天（不含今天）心情均为负面（😔/😢）时降级为简化记录
+    let isLowPeriod = false;
+    if (historyList.length >= 3) {
+      const negativeMoods = ['😔', '😢'];
+      const last3Days = historyList.slice(0, 3);
+      isLowPeriod = last3Days.every(item => negativeMoods.indexOf(item.moodEmoji) >= 0);
+    }
+
     this.setData({
       todayStr: displayDate,
       streak,
       todayDone,
       todayRecord: todayRecord || null,
       historyList,
+      isLowPeriod,
+      // P2-10: 每次加载重置为简化模式（仅在 isLowPeriod 时生效）
+      showFullMode: false,
       selectedMood: todayRecord ? todayRecord.moodEmoji : '',
       inputText: todayRecord ? todayRecord.text : ''
     });
@@ -92,6 +104,35 @@ Page({
     } finally {
       this.setData({ saving: false });
     }
+  },
+
+  // P2-10: 简化模式 - 一键保存心情
+  onSimpleMood(e) {
+    if (this.data.saving) return;
+
+    const mood = e.currentTarget.dataset.mood;
+    const text = e.currentTarget.dataset.text;
+
+    this.setData({ saving: true });
+
+    try {
+      db.daily.save({
+        text: text,
+        moodEmoji: mood
+      });
+      wx.showToast({ title: '记录成功', icon: 'success' });
+      this._loadData();
+    } catch (err) {
+      console.error('daily simple save error:', err);
+      wx.showToast({ title: '保存失败', icon: 'none' });
+    } finally {
+      this.setData({ saving: false });
+    }
+  },
+
+  // P2-10: 切换回完整记录模式
+  switchToFullMode() {
+    this.setData({ showFullMode: true });
   },
 
   goQuarterly() {

@@ -18,9 +18,14 @@
     </view>
   </view>
 
-  <!-- 已完成：只读查看 -->
-  <block wx:if="{{hasReview}}">
+  <!-- 已完成：只读查看（P1-3: 添加编辑入口） -->
+  <block wx:if="{{hasReview && !isEditing}}">
     <view class="section-title">结构检视</view>
+
+    <!-- 编辑按钮 -->
+    <view class="edit-btn-area" style="text-align: right; margin-bottom: 16rpx;">
+      <button class="btn-outline" style="display: inline-block; padding: 12rpx 32rpx; font-size: 24rpx;" bindtap="onEdit">编辑</button>
+    </view>
 
     <!-- 崩溃点 -->
     <view class="card review-card">

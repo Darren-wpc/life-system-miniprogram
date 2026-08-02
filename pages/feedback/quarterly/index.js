@@ -6,6 +6,7 @@ Page({
   data: {
     currentQuarter: '',
     hasReview: false,
+    isEditing: false,  // P1-3: 编辑模式标志
     reviewData: null,
     saving: false,
     // 四个结构检视
@@ -49,6 +50,7 @@ Page({
       this.setData({
         currentQuarter,
         hasReview: true,
+        isEditing: false,  // P1-3: 加载时重置编辑状态
         reviewData: review,
         collapseText: review.collapseText || '',
         leverageText: review.leverageText || '',
@@ -89,6 +91,11 @@ Page({
   onFactorSelect(e) {
     const key = e.currentTarget.dataset.key;
     this.setData({ focusFactor: key });
+  },
+
+  // P1-3: 切换到编辑模式
+  onEdit() {
+    this.setData({ isEditing: true });
   },
 
   onSave() {

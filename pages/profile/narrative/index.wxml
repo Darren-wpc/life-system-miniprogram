@@ -6,9 +6,12 @@
     <text class="quarter-text">{{currentQuarter}} 季度记录</text>
   </view>
 
-  <!-- 本季度无记录 —— 编辑模式 -->
-  <block wx:if="{{!hasRecord}}">
-    <view class="callout callout-info">
+  <!-- 编辑模式（无记录 或 正在编辑 P1-3） -->
+  <block wx:if="{{!hasRecord || isEditing}}">
+    <view class="callout callout-info" wx:if="{{isEditing}}">
+      <text>正在编辑本季度叙事记录，修改后点击保存即可更新。</text>
+    </view>
+    <view class="callout callout-info" wx:else>
       <text>每个季度回答一次这三个问题，审视你的人生叙事是否自洽。</text>
     </view>
 
@@ -57,10 +60,15 @@
     </view>
   </block>
 
-  <!-- 本季度已有记录 —— 只读模式 -->
-  <block wx:if="{{hasRecord}}">
+  <!-- 只读模式（有记录 且 不在编辑 P1-3） -->
+  <block wx:if="{{hasRecord && !isEditing}}">
     <view class="callout callout-info">
       <text>本季度叙事记录已完成。以下为你当前的回答。</text>
+    </view>
+
+    <!-- 编辑按钮 -->
+    <view style="text-align: right; margin-bottom: 16rpx;">
+      <button class="btn-outline" style="display: inline-block; padding: 12rpx 32rpx; font-size: 24rpx;" bindtap="onEdit">编辑</button>
     </view>
 
     <view class="readonly-card card" wx:for="{{questions}}" wx:key="key">

@@ -1,0 +1,57 @@
+<!--pages/export/index.wxml - 数据管理-->
+<view class="page-container">
+
+  <!-- 存储概览 -->
+  <view class="section-title">存储概览</view>
+  <view class="card overview-card">
+    <view class="overview-row">
+      <view class="overview-stat">
+        <text class="stat-num">{{totalRecords}}</text>
+        <text class="stat-label">总记录数</text>
+      </view>
+      <view class="overview-divider"></view>
+      <view class="overview-stat">
+        <text class="stat-num">{{storageUsed}}</text>
+        <text class="stat-label">已用 (KB)</text>
+      </view>
+    </view>
+    <view class="storage-track">
+      <view class="storage-fill" style="width: {{storagePercent}}%"></view>
+    </view>
+    <view class="storage-meta text-muted">上限 {{storageLimit}} KB · 已用 {{storagePercent}}%</view>
+  </view>
+
+  <!-- 数据分类 -->
+  <view class="section-title">数据分类</view>
+  <view class="card">
+    <view class="cat-item" wx:for="{{categories}}" wx:key="key">
+      <view class="cat-info">
+        <text class="cat-name">{{item.name}}</text>
+        <text class="cat-desc text-muted">{{item.desc}}</text>
+      </view>
+      <view class="cat-count">
+        <text class="count-num {{item.count > 0 ? 'count-active' : ''}}">{{item.count}}</text>
+        <text class="count-unit text-muted">条</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 导出操作 -->
+  <view class="section-title">导出备份</view>
+  <view class="card">
+    <view class="export-desc">
+      <text>将全部数据导出为 JSON 文本并复制到剪贴板，可粘贴到备忘录或文档中保存。</text>
+    </view>
+    <button class="btn-primary export-btn" bindtap="onExport" disabled="{{exporting}}">
+      {{exporting ? '导出中...' : '导出全部数据到剪贴板'}}
+    </button>
+    <view class="last-export text-muted" wx:if="{{lastExportTime}}">
+      上次导出：{{lastExportTime}}
+    </view>
+  </view>
+
+  <view class="callout callout-info">
+    <text>提示：导出的 JSON 数据包含你的全部记录。由于微信剪贴板有长度限制，若数据量极大可能无法完整复制，建议定期导出并清理旧数据。</text>
+  </view>
+
+</view>

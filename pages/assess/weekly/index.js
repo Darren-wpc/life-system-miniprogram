@@ -13,10 +13,7 @@ Page({
     weekLabel: ''
   },
 
-  onLoad() {
-    this._loadData();
-  },
-
+  // P1-4: 数据加载统一放 onShow
   onShow() {
     this._loadData();
   },
@@ -108,20 +105,5 @@ Page({
 
   goResources() {
     wx.navigateTo({ url: '/pages/assess/resources/index' });
-  },
-
-  _getScoreColor(current, prev) {
-    if (prev === null) return 'text-primary';
-    if (current > prev) return 'text-accent';
-    if (current < prev) return 'text-danger';
-    return 'text-muted';
-  },
-
-  _getScoreDiffText(current, prev) {
-    if (prev === null) return '';
-    const diff = current - prev;
-    if (diff > 0) return `+${diff}`;
-    if (diff < 0) return `${diff}`;
-    return '0';
   }
 });

@@ -2,6 +2,7 @@
 const db = require('../../../utils/db');
 const constants = require('../../../utils/constants');
 const diagnosis = require('../../../utils/diagnosis');
+const { haptic, confirmDelete } = require('../../../utils/common');
 
 // 七类资源的核心指标定义
 const RESOURCE_METRICS = {
@@ -41,6 +42,9 @@ const RESOURCE_METRICS = {
 
 // L1-L4 层级
 const LEVEL_KEYS = ['L1', 'L2', 'L3', 'L4'];
+
+// P3-7: 资源转化下拉选项键
+const RESOURCE_KEYS = ['money', 'time', 'health', 'relationship', 'capability', 'info', 'psychology'];
 
 // 金钱资源指标独立归一化（量纲不同，不能混用同一公式）
 function _normalizeMoneyMetric(metricKey, num) {
@@ -97,13 +101,18 @@ Page({
     metricsData: {},
     relLevels: {},
     relationshipExpanded: false,
-    saving: false
+    saving: false,
+    // P3-7: 资源转化追踪
+    transforms: [],
+    transformOptions: [],
+    showTransform: false,
+    transformFrom: '',
+    transformTo: '',
+    transformAmount: '',
+    transformNote: ''
   },
 
-  onLoad() {
-    this._loadData();
-  },
-
+  // P1-4: 数据加载统一放 onShow
   onShow() {
     this._loadData();
   },
@@ -162,14 +171,43 @@ Page({
       Object.assign(expandedKeys, saved.expandedKeys);
     }
 
+    // P3-7: 构建转化选项（key/name/icon）
+    const transformOptions = RESOURCE_KEYS.map(key => {
+      const res = constants.RESOURCE_TYPES[key];
+      return { key, name: res.name, icon: res.icon };
+    });
+
     this.setData({
       resources,
       healthSummary,
       expandedKeys,
       metricsData,
       relLevels,
-      relationshipExpanded: !!(expandedKeys && expandedKeys['relationship'])
+      relationshipExpanded: !!(expandedKeys && expandedKeys['relationship']),
+      transformOptions
     });
+
+    this._loadTransforms();
+  },
+
+  // P3-7: 加载资源转化记录并映射为展示对象
+  _loadTransforms() {
+    const list = db.transform.getAll();
+    const transforms = list.map(r => {
+      const fromType = constants.RESOURCE_TYPES[r.from] || null;
+      const toType = constants.RESOURCE_TYPES[r.to] || null;
+      return {
+        id: r.id,
+        date: r.date,
+        from: r.from,
+        to: r.to,
+        fromName: fromType ? fromType.name : r.from,
+        toName: toType ? toType.name : r.to,
+        amount: r.amount,
+        note: r.note || ''
+      };
+    });
+    this.setData({ transforms });
   },
 
   _recalcHealth() {
@@ -201,13 +239,6 @@ Page({
       [`metricsData.${resourceKey}.${metricKey}`]: value
     });
     this._recalcHealth();
-  },
-
-  toggleRelationship() {
-    this.setData({
-      relationshipExpanded: !this.data.relationshipExpanded,
-      'expandedKeys.relationship': !this.data.relationshipExpanded
-    });
   },
 
   onRelNameInput(e) {
@@ -262,5 +293,78 @@ Page({
     } finally {
       this.setData({ saving: false });
     }
+  },
+
+  // ===== P3-7: 资源转化追踪 =====
+  toggleTransform() {
+    haptic();
+    this.setData({ showTransform: !this.data.showTransform });
+  },
+
+  onTransformFromInput(e) {
+    const key = e.currentTarget.dataset.key;
+    this.setData({ transformFrom: key });
+  },
+
+  onTransformToInput(e) {
+    const key = e.currentTarget.dataset.key;
+    this.setData({ transformTo: key });
+  },
+
+  onTransformAmountInput(e) {
+    this.setData({ transformAmount: e.detail.value });
+  },
+
+  onTransformNoteInput(e) {
+    this.setData({ transformNote: e.detail.value });
+  },
+
+  addTransform() {
+    const { transformFrom, transformTo, transformAmount, transformNote } = this.data;
+    if (!transformFrom) {
+      wx.showToast({ title: '请选择消耗的资源', icon: 'none' });
+      return;
+    }
+    if (!transformTo) {
+      wx.showToast({ title: '请选择获得的资源', icon: 'none' });
+      return;
+    }
+    if (transformFrom === transformTo) {
+      wx.showToast({ title: '来源与目标不能相同', icon: 'none' });
+      return;
+    }
+    if (!transformAmount || !transformAmount.trim()) {
+      wx.showToast({ title: '请输入转化数量/描述', icon: 'none' });
+      return;
+    }
+
+    db.transform.save({
+      from: transformFrom,
+      to: transformTo,
+      amount: transformAmount.trim(),
+      note: (transformNote || '').trim()
+    });
+
+    haptic();
+    this.setData({
+      transformFrom: '',
+      transformTo: '',
+      transformAmount: '',
+      transformNote: '',
+      showTransform: false
+    });
+    this._loadTransforms();
+    wx.showToast({ title: '已记录转化', icon: 'success' });
+  },
+
+  deleteTransform(e) {
+    const id = e.currentTarget.dataset.id;
+    const item = this.data.transforms.find(t => t.id === id);
+    const name = item ? `${item.fromName} → ${item.toName}` : '';
+    confirmDelete(name, () => {
+      db.transform.remove(id);
+      this._loadTransforms();
+      wx.showToast({ title: '已删除', icon: 'none' });
+    });
   }
 });

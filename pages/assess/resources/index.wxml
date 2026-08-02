@@ -114,6 +114,111 @@
     </view>
   </view>
 
+  <!-- P3-7: 资源转化追踪 -->
+  <view class="section-title">资源转化追踪</view>
+  <view class="card transform-card">
+    <view class="transform-desc text-muted">记录资源之间的转化流向，例如用金钱换时间、用时间换能力。</view>
+
+    <!-- 添加按钮 -->
+    <view class="transform-add-btn" bindtap="toggleTransform" wx:if="{{!showTransform}}">
+      <text class="transform-add-icon">+</text>
+      <text class="transform-add-text">记录一次资源转化</text>
+    </view>
+
+    <!-- 转化表单 -->
+    <view class="transform-form" wx:if="{{showTransform}}">
+
+      <!-- 来源资源选择 -->
+      <view class="transform-field">
+        <text class="transform-label">从（消耗）</text>
+        <view class="chip-row">
+          <view
+            class="chip {{transformFrom === item.key ? 'chip-active' : ''}}"
+            wx:for="{{transformOptions}}"
+            wx:key="key"
+            bindtap="onTransformFromInput"
+            data-key="{{item.key}}"
+          >
+            <text class="chip-icon">{{item.icon}}</text>
+            <text class="chip-name">{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 目标资源选择 -->
+      <view class="transform-field">
+        <text class="transform-label">到（获得）</text>
+        <view class="chip-row">
+          <view
+            class="chip {{transformTo === item.key ? 'chip-active' : ''}}"
+            wx:for="{{transformOptions}}"
+            wx:key="key"
+            bindtap="onTransformToInput"
+            data-key="{{item.key}}"
+          >
+            <text class="chip-icon">{{item.icon}}</text>
+            <text class="chip-name">{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 转化数量/描述 -->
+      <view class="transform-field">
+        <text class="transform-label">转化数量/描述</text>
+        <input
+          class="transform-input"
+          type="text"
+          placeholder="如：5000元 / 10小时 / 1次课程"
+          placeholder-class="input-placeholder"
+          value="{{transformAmount}}"
+          bindinput="onTransformAmountInput"
+        />
+      </view>
+
+      <!-- 备注 -->
+      <view class="transform-field">
+        <text class="transform-label">备注（可选）</text>
+        <input
+          class="transform-input"
+          type="text"
+          placeholder="如：报了周末培训班"
+          placeholder-class="input-placeholder"
+          value="{{transformNote}}"
+          bindinput="onTransformNoteInput"
+        />
+      </view>
+
+      <view class="transform-form-actions">
+        <button class="btn-secondary transform-cancel-btn" bindtap="toggleTransform">取消</button>
+        <button class="btn-primary transform-save-btn" bindtap="addTransform">保存转化</button>
+      </view>
+    </view>
+
+    <!-- 转化列表 -->
+    <view class="transform-list" wx:if="{{transforms.length > 0}}">
+      <view class="transform-item" wx:for="{{transforms}}" wx:key="id">
+        <view class="transform-item-main">
+          <view class="transform-flow">
+            <text class="transform-from">{{item.fromName}}</text>
+            <text class="transform-arrow">→</text>
+            <text class="transform-to">{{item.toName}}</text>
+          </view>
+          <view class="transform-amount text-muted">{{item.amount}}</view>
+          <view class="transform-note text-muted" wx:if="{{item.note}}">{{item.note}}</view>
+          <view class="transform-date text-muted">{{item.date}}</view>
+        </view>
+        <view class="transform-delete" bindtap="deleteTransform" data-id="{{item.id}}">
+          <text class="transform-delete-icon">×</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{transforms.length === 0 && !showTransform}}">
+      <text class="empty-text">还没有记录资源转化</text>
+    </view>
+  </view>
+
   <!-- 保存按钮 -->
   <view class="save-area">
     <button class="btn-primary save-btn" bindtap="onSave" loading="{{saving}}">

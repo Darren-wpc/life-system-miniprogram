@@ -1,13 +1,31 @@
 <!--pages/index/index.wxml - 六维健康度仪表盘首页-->
 
-<!-- 空状态引导 -->
-<view class="empty-state" wx:if="{{!hasData}}">
-  <view class="empty-icon-wrap">
-    <canvas canvas-id="emptyRadar" id="emptyRadar" class="empty-radar-canvas"></canvas>
+<!-- P2-9: 骨架屏加载占位 -->
+<view class="skeleton-wrap" wx:if="{{loading}}">
+  <view class="skeleton-header">
+    <view class="skeleton-block skeleton-title"></view>
+    <view class="skeleton-block skeleton-date"></view>
   </view>
-  <view class="empty-text">完成本周自评，生成你的健康度雷达图</view>
-  <view class="btn-primary empty-btn" bindtap="goToWeeklyAssess">开始自评</view>
+  <view class="skeleton-badges">
+    <view class="skeleton-block skeleton-badge"></view>
+    <view class="skeleton-block skeleton-badge"></view>
+    <view class="skeleton-block skeleton-badge"></view>
+  </view>
+  <view class="skeleton-block skeleton-radar"></view>
+  <view class="skeleton-block skeleton-card"></view>
+  <view class="skeleton-block skeleton-card"></view>
 </view>
+
+<block wx:elif="{{!hasData}}">
+  <!-- 空状态引导 -->
+  <view class="empty-state">
+    <view class="empty-icon-wrap">
+      <canvas type="2d" id="emptyRadar" class="empty-radar-canvas"></canvas>
+    </view>
+    <view class="empty-text">完成本周自评，生成你的健康度雷达图</view>
+    <view class="btn-primary empty-btn" bindtap="goToWeeklyAssess">开始自评</view>
+  </view>
+</block>
 
 <!-- 有数据时的仪表盘 -->
 <view class="dashboard" wx:else>
@@ -51,7 +69,7 @@
       </view>
     </view>
     <view class="radar-canvas-wrap">
-      <canvas canvas-id="radarChart" id="radarChart" class="radar-canvas"
+      <canvas type="2d" id="radarChart" class="radar-canvas"
               bindtap="onRadarTap" bindlongpress="onRadarLongPress"></canvas>
     </view>
     <view class="radar-week-label">
@@ -87,6 +105,36 @@
               style="width: {{item.progressPercent}}%"></view>
       </view>
     </view>
+  </view>
+
+  <!-- P1-5: 五因子摘要 -->
+  <view class="factor-summary card" wx:if="{{hasFactorData}}">
+    <view class="section-title">五因子</view>
+    <view class="factor-row">
+      <text class="factor-label">乘积效能</text>
+      <view class="factor-bar-wrap">
+        <view class="factor-bar" style="width: {{factorProductPercent}}%"></view>
+      </view>
+      <text class="factor-value">{{factorProductPercent}}%</text>
+    </view>
+    <view class="factor-row" wx:if="{{factorBottleneck}}">
+      <text class="factor-label">瓶颈因子</text>
+      <text class="factor-value text-danger">{{factorBottleneck}}</text>
+    </view>
+    <view class="quick-link" bindtap="goToFactors">去评估 →</view>
+  </view>
+
+  <!-- P1-5: 资源盘点摘要 -->
+  <view class="resource-summary card" wx:if="{{hasResourceData}}">
+    <view class="section-title">资源盘点</view>
+    <view class="resource-row">
+      <text class="resource-label">已盘点</text>
+      <text class="resource-value">{{resourceFilled}} / {{resourceTotal}} 类</text>
+    </view>
+    <view class="resource-bar-wrap">
+      <view class="resource-bar" style="width: {{resourceFilled / resourceTotal * 100}}%"></view>
+    </view>
+    <view class="quick-link" bindtap="goToResources">去盘点 →</view>
   </view>
 
   <!-- 洞察区 -->

@@ -1,12 +1,13 @@
 // pages/profile/narrative/index.js - 叙事一致性记录
 
-var db = require('../../../utils/db');
-var constants = require('../../../utils/constants');
+const db = require('../../../utils/db');
+const constants = require('../../../utils/constants');
 
 Page({
   data: {
     currentQuarter: '',
     hasRecord: false,
+    isEditing: false,  // P1-3: 编辑模式标志
     latestRecord: null,
     // 三个问题
     questions: [
@@ -35,17 +36,17 @@ Page({
     historyExpanded: false
   },
 
-  onLoad: function () {
-    var currentQuarter = db.getQuarterId(new Date());
-    this.setData({ currentQuarter: currentQuarter });
+  onLoad() {
+    // P1-4: 仅做一次性初始化，数据加载放 onShow
+    const currentQuarter = db.getQuarterId(new Date());
+    this.setData({ currentQuarter });
+  },
+
+  onShow() {
     this._loadData();
   },
 
-  onShow: function () {
-    this._loadData();
-  },
-
-  onPullDownRefresh: function () {
+  onPullDownRefresh() {
     this._loadData();
     wx.stopPullDownRefresh();
   },
@@ -53,14 +54,15 @@ Page({
   /**
    * 加载数据：检查本季度是否已有记录
    */
-  _loadData: function () {
-    var currentQuarter = db.getQuarterId(new Date());
-    var latest = db.narrative.getLatest();
+  _loadData() {
+    const currentQuarter = db.getQuarterId(new Date());
+    const latest = db.narrative.getLatest();
 
     if (latest && latest.id === currentQuarter) {
       // 本季度已有记录 —— 只读模式
       this.setData({
         hasRecord: true,
+        isEditing: false,  // P1-3: 加载时重置编辑状态
         latestRecord: latest,
         'questions[0].value': latest.explanatory || '',
         'questions[1].value': latest.carrying || '',
@@ -78,18 +80,17 @@ Page({
     }
 
     // 加载历史记录
-    var allRecords = db.narrative.getAll();
+    const allRecords = db.narrative.getAll();
     this.setData({ historyList: allRecords });
   },
 
   /**
    * textarea 输入
    */
-  onQuestionInput: function (e) {
-    var key = e.currentTarget.dataset.key;
-    var index = e.currentTarget.dataset.index;
-    var value = e.detail.value;
-    var fieldName = 'questions[' + index + '].value';
+  onQuestionInput(e) {
+    const index = e.currentTarget.dataset.index;
+    const value = e.detail.value;
+    const fieldName = `questions[${index}].value`;
     this.setData({ [fieldName]: value });
     this._updateFilledCount();
   },
@@ -97,10 +98,10 @@ Page({
   /**
    * 更新已填写计数
    */
-  _updateFilledCount: function () {
-    var questions = this.data.questions;
-    var count = 0;
-    questions.forEach(function (q) {
+  _updateFilledCount() {
+    const { questions } = this.data;
+    let count = 0;
+    questions.forEach((q) => {
       if (q.value && q.value.trim()) {
         count++;
       }
@@ -111,7 +112,7 @@ Page({
   /**
    * 保存记录
    */
-  onSave: function () {
+  onSave() {
     if (this.data.saving) return;
 
     // 校验：至少填写一项
@@ -122,8 +123,8 @@ Page({
 
     this.setData({ saving: true });
 
-    var questions = this.data.questions;
-    var data = {
+    const { questions } = this.data;
+    const data = {
       explanatory: questions[0].value.trim(),
       carrying: questions[1].value.trim(),
       honesty: questions[2].value.trim()
@@ -133,11 +134,11 @@ Page({
       db.narrative.save(data);
       wx.showToast({ title: '已保存', icon: 'success' });
 
-      // 切换到只读模式
-      setTimeout(function () {
-        this.setData({ saving: false });
+      // P1-3: 保存后退出编辑模式
+      setTimeout(() => {
+        this.setData({ saving: false, isEditing: false });
         this._loadData();
-      }.bind(this), 800);
+      }, 800);
     } catch (e) {
       console.error('narrative save error:', e);
       this.setData({ saving: false });
@@ -145,22 +146,15 @@ Page({
     }
   },
 
-  /**
-   * 展开/收起历史记录
-   */
-  toggleHistory: function () {
-    this.setData({ historyExpanded: !this.data.historyExpanded });
+  // P1-3: 切换到编辑模式
+  onEdit() {
+    this.setData({ isEditing: true });
   },
 
   /**
-   * 格式化时间戳为可读日期
+   * 展开/收起历史记录
    */
-  formatDate: function (timestamp) {
-    if (!timestamp) return '';
-    var d = new Date(timestamp);
-    var y = d.getFullYear();
-    var m = String(d.getMonth() + 1).padStart(2, '0');
-    var day = String(d.getDate()).padStart(2, '0');
-    return y + '-' + m + '-' + day;
+  toggleHistory() {
+    this.setData({ historyExpanded: !this.data.historyExpanded });
   }
 });

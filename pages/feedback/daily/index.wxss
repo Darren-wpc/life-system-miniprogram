@@ -198,6 +198,56 @@
   border-radius: 16rpx;
 }
 
+/* P2-10: 低谷期简化模式 */
+.simple-callout {
+  margin: 0 0 28rpx 0;
+  text-align: center;
+}
+
+.simple-mood-list {
+  display: flex;
+  gap: 24rpx;
+}
+
+.simple-mood-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36rpx 0;
+  background: var(--bg);
+  border-radius: 20rpx;
+  border: 3rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.simple-mood-btn:active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  transform: scale(0.97);
+}
+
+.simple-mood-emoji {
+  font-size: 64rpx;
+  margin-bottom: 12rpx;
+}
+
+.simple-mood-label {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.full-mode-link {
+  text-align: center;
+  font-size: 24rpx;
+  color: var(--muted);
+  margin-top: 28rpx;
+  padding: 8rpx 0;
+  text-decoration: underline;
+}
+
 /* 时间线 */
 .timeline {
   padding-left: 12rpx;

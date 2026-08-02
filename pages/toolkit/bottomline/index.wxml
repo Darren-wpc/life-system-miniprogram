@@ -1,6 +1,21 @@
 <!--pages/toolkit/bottomline/index.wxml-->
 <view class="page-container">
 
+  <!-- P2-11: 底线告警 -->
+  <view class="alert-section" wx:if="{{alerts.length > 0}}">
+    <view class="callout callout-danger alert-header">
+      <text>⚠️ 以下维度已跌破底线</text>
+    </view>
+    <view class="alert-item card" wx:for="{{alerts}}" wx:key="key">
+      <view class="alert-item-header">
+        <text class="alert-item-icon">{{item.icon}}</text>
+        <text class="alert-item-name">{{item.name}}</text>
+      </view>
+      <view class="alert-item-bottomline">{{item.bottomline}}</view>
+    </view>
+    <button class="btn-primary alert-action-btn" bindtap="goInterrupt">查看恢复脚本</button>
+  </view>
+
   <!-- 引导语 -->
   <view class="callout callout-warning">
     <text>为每个生命维度设定一条底线。一旦跌破，必须停下处理，不允许"再忍忍"。</text>

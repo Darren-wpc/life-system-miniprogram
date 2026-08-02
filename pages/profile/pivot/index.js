@@ -1,7 +1,7 @@
 // pages/profile/pivot/index.js - 转向信号检测
 
-var db = require('../../../utils/db');
-var constants = require('../../../utils/constants');
+const db = require('../../../utils/db');
+const constants = require('../../../utils/constants');
 
 Page({
   data: {
@@ -28,31 +28,28 @@ Page({
     hasRecord: false
   },
 
-  onLoad: function () {
-    var currentQuarter = db.getQuarterId(new Date());
-    this.setData({ currentQuarter: currentQuarter });
+  onLoad() {
+    const currentQuarter = db.getQuarterId(new Date());
+    this.setData({ currentQuarter });
 
     // 加载 PIVOT_SIGNALS 常量
-    var signals = constants.PIVOT_SIGNALS.map(function (s) {
-      return {
-        id: s.id,
-        text: s.text,
-        autoDetect: s.autoDetect,
-        checked: false
-      };
-    });
+    const signals = constants.PIVOT_SIGNALS.map((s) => ({
+      id: s.id,
+      text: s.text,
+      autoDetect: s.autoDetect,
+      checked: false,
+      autoDetected: false  // P1-7: 标记是否由系统自动检测勾选
+    }));
 
-    this.setData({ signals: signals });
+    this.setData({ signals });
+    // P1-4: 数据加载放 onShow，onLoad 仅做初始化
+  },
+
+  onShow() {
     this._loadData();
   },
 
-  onShow: function () {
-    if (this.data.signals.length > 0) {
-      this._loadData();
-    }
-  },
-
-  onPullDownRefresh: function () {
+  onPullDownRefresh() {
     this._loadData();
     wx.stopPullDownRefresh();
   },
@@ -60,62 +57,168 @@ Page({
   /**
    * 加载已保存数据
    */
-  _loadData: function () {
-    var currentQuarter = db.getQuarterId(new Date());
-    var latest = db.pivot.getLatest();
+  _loadData() {
+    const currentQuarter = db.getQuarterId(new Date());
+    const latest = db.pivot.getLatest();
 
     if (latest && latest.id === currentQuarter) {
       // 本季度已有记录，恢复状态
-      var signals = this.data.signals;
-      var checkedSignalIds = latest.checkedSignals || [];
+      const signals = this.data.signals;
+      const checkedSignalIds = latest.checkedSignals || [];
 
-      signals.forEach(function (s) {
+      signals.forEach((s) => {
         s.checked = checkedSignalIds.indexOf(s.id) >= 0;
+        s.autoDetected = false;  // 重置自动检测标志
       });
-
-      var checkedCount = signals.filter(function (s) { return s.checked; }).length;
 
       // 恢复准备清单
-      var prepList = this.data.prepList;
-      var savedPrep = latest.prepList || {};
-      prepList.forEach(function (item) {
+      const prepList = this.data.prepList;
+      const savedPrep = latest.prepList || {};
+      prepList.forEach((item) => {
         item.checked = !!savedPrep[item.key];
       });
-      var prepCheckedCount = prepList.filter(function (item) { return item.checked; }).length;
+      const prepCheckedCount = prepList.filter((item) => item.checked).length;
 
       this.setData({
-        signals: signals,
-        checkedCount: checkedCount,
+        signals,
         hasRecord: true,
-        prepList: prepList,
-        prepCheckedCount: prepCheckedCount
+        prepList,
+        prepCheckedCount
       });
+
+      // P1-7: 自动检测 —— 仅对未在已保存勾选列表中的信号进行检测，
+      // 避免覆盖用户已做出的手动选择
+      this._autoDetectSignals(checkedSignalIds);
+
+      // 重新计算已勾选数量（自动检测可能新增勾选）
+      const checkedCount = this.data.signals.filter((s) => s.checked).length;
+      this.setData({ checkedCount });
 
       this._updateRecommendation();
       this._updatePrepConclusion();
+    } else {
+      // 本季度无记录 —— 运行自动检测预勾选
+      this._autoDetectSignals();
+
+      const checkedCount = this.data.signals.filter((s) => s.checked).length;
+      this.setData({ checkedCount, hasRecord: false });
+
+      this._updateRecommendation();
     }
+  },
+
+  /**
+   * P1-7: 转向信号自动检测
+   * 根据周评分数据自动检测信号 1、3、6 并预勾选
+   * @param {Array} excludeIds - 已保存的勾选信号ID列表，这些信号不会被自动检测覆盖
+   */
+  _autoDetectSignals(excludeIds = []) {
+    const signals = this.data.signals;
+    const weeklyList = db.weekly.getAll();
+
+    if (weeklyList.length < 4) return; // 需要至少4周数据
+
+    const excludeSet = new Set(excludeIds);
+
+    // 按季度聚合周评分
+    const quarterData = {};
+    // 记录每个维度在哪些季度出现过低分（≤2），用于信号3检测
+    const lowDimQuarters = {};
+    constants.DIM_KEYS.forEach((k) => { lowDimQuarters[k] = new Set(); });
+
+    weeklyList.forEach((record) => {
+      const qId = db.getQuarterId(new Date(record.date || record.id));
+      if (!quarterData[qId]) {
+        quarterData[qId] = { count: 0, dims: {} };
+        constants.DIM_KEYS.forEach((k) => { quarterData[qId].dims[k] = 0; });
+      }
+      quarterData[qId].count++;
+      constants.DIM_KEYS.forEach((k) => {
+        const score = record[k] || 0;
+        quarterData[qId].dims[k] += score;
+        if (score <= 2) {
+          lowDimQuarters[k].add(qId);
+        }
+      });
+    });
+
+    const quarters = Object.keys(quarterData).sort().reverse();
+
+    // Signal 1: 连续2个季度在≥2个维度上持续下行
+    if (quarters.length >= 2) {
+      const recent = quarterData[quarters[0]];
+      const prev = quarterData[quarters[1]];
+      let declineCount = 0;
+      constants.DIM_KEYS.forEach((k) => {
+        const recentAvg = recent.dims[k] / recent.count;
+        const prevAvg = prev.dims[k] / prev.count;
+        if (recentAvg < prevAvg) declineCount++;
+      });
+      if (declineCount >= 2) {
+        const sig = signals.find((s) => s.id === 1);
+        if (sig && !excludeSet.has(1)) {
+          sig.checked = true;
+          sig.autoDetected = true;
+        }
+      }
+    }
+
+    // Signal 3: 同一类问题过去3年反复出现
+    // 简化判定：任一维度在3个以上不同季度的记录中得分≤2
+    const hasRecurringProblem = constants.DIM_KEYS.some(
+      (k) => lowDimQuarters[k].size >= 3
+    );
+    if (hasRecurringProblem) {
+      const sig = signals.find((s) => s.id === 3);
+      if (sig && !excludeSet.has(3)) {
+        sig.checked = true;
+        sig.autoDetected = true;
+      }
+    }
+
+    // Signal 6: 身体已经在替我说话：慢性症状/失眠/情绪躯体化
+    // 判定：survival维度连续3周以上得分≤2
+    const recentWeeks = weeklyList.slice(0, 10);
+    let consecutiveLow = 0;
+    let maxConsecutive = 0;
+    for (let i = 0; i < recentWeeks.length; i++) {
+      if ((recentWeeks[i].survival || 0) <= 2) {
+        consecutiveLow++;
+        maxConsecutive = Math.max(maxConsecutive, consecutiveLow);
+      } else {
+        consecutiveLow = 0;
+      }
+    }
+    if (maxConsecutive >= 3) {
+      const sig = signals.find((s) => s.id === 6);
+      if (sig && !excludeSet.has(6)) {
+        sig.checked = true;
+        sig.autoDetected = true;
+      }
+    }
+
+    this.setData({ signals });
   },
 
   /**
    * 信号勾选/取消
    */
-  onSignalToggle: function (e) {
-    var id = e.currentTarget.dataset.id;
-    var signals = this.data.signals;
-    var target = null;
+  onSignalToggle(e) {
+    const id = e.currentTarget.dataset.id;
+    const signals = this.data.signals;
 
-    signals.forEach(function (s) {
+    signals.forEach((s) => {
       if (s.id === id) {
         s.checked = !s.checked;
-        target = s;
+        s.autoDetected = false;  // 用户手动操作后清除自动检测标记
       }
     });
 
-    var checkedCount = signals.filter(function (s) { return s.checked; }).length;
+    const checkedCount = signals.filter((s) => s.checked).length;
 
     this.setData({
-      signals: signals,
-      checkedCount: checkedCount
+      signals,
+      checkedCount
     });
 
     this._updateRecommendation();
@@ -124,15 +227,15 @@ Page({
   /**
    * 更新推荐级别
    */
-  _updateRecommendation: function () {
-    var count = this.data.checkedCount;
-    var level = 'info';
-    var text = '';
+  _updateRecommendation() {
+    const { checkedCount } = this.data;
+    let level = 'info';
+    let text = '';
 
-    if (count <= 1) {
+    if (checkedCount <= 1) {
       level = 'info';
       text = '暂无强烈转向信号。继续保持观察，定期复评。';
-    } else if (count === 2) {
+    } else if (checkedCount === 2) {
       level = 'warning';
       text = '出现多个转向信号，建议认真思考：这些信号指向同一个方向吗？';
     } else {
@@ -140,33 +243,33 @@ Page({
       text = '强烈转向信号。是时候认真考虑了——但先完成转向准备清单。';
     }
 
-    var showPrepList = count >= 2;
+    const showPrepList = checkedCount >= 2;
 
     this.setData({
       recommendationLevel: level,
       recommendationText: text,
-      showPrepList: showPrepList
+      showPrepList
     });
   },
 
   /**
    * 准备清单勾选/取消
    */
-  onPrepToggle: function (e) {
-    var key = e.currentTarget.dataset.key;
-    var prepList = this.data.prepList;
+  onPrepToggle(e) {
+    const key = e.currentTarget.dataset.key;
+    const prepList = this.data.prepList;
 
-    prepList.forEach(function (item) {
+    prepList.forEach((item) => {
       if (item.key === key) {
         item.checked = !item.checked;
       }
     });
 
-    var prepCheckedCount = prepList.filter(function (item) { return item.checked; }).length;
+    const prepCheckedCount = prepList.filter((item) => item.checked).length;
 
     this.setData({
-      prepList: prepList,
-      prepCheckedCount: prepCheckedCount
+      prepList,
+      prepCheckedCount
     });
 
     this._updatePrepConclusion();
@@ -175,10 +278,10 @@ Page({
   /**
    * 更新准备清单结论
    */
-  _updatePrepConclusion: function () {
-    var count = this.data.prepCheckedCount;
-    var conclusion = '';
-    var type = '';
+  _updatePrepConclusion() {
+    const { prepCheckedCount: count } = this.data;
+    let conclusion = '';
+    let type = '';
 
     if (count >= 4) {
       conclusion = '转向是设计';
@@ -200,26 +303,26 @@ Page({
   /**
    * 保存
    */
-  onSave: function () {
+  onSave() {
     if (this.data.saving) return;
     this.setData({ saving: true });
 
-    var signals = this.data.signals;
-    var checkedSignals = [];
-    signals.forEach(function (s) {
+    const signals = this.data.signals;
+    const checkedSignals = [];
+    signals.forEach((s) => {
       if (s.checked) {
         checkedSignals.push(s.id);
       }
     });
 
-    var prepList = this.data.prepList;
-    var prepData = {};
-    prepList.forEach(function (item) {
+    const prepList = this.data.prepList;
+    const prepData = {};
+    prepList.forEach((item) => {
       prepData[item.key] = item.checked;
     });
 
-    var data = {
-      checkedSignals: checkedSignals,
+    const data = {
+      checkedSignals,
       checkedCount: this.data.checkedCount,
       prepList: prepData,
       prepCheckedCount: this.data.prepCheckedCount,
@@ -235,8 +338,8 @@ Page({
       wx.showToast({ title: '保存失败', icon: 'none' });
     }
 
-    setTimeout(function () {
+    setTimeout(() => {
       this.setData({ saving: false });
-    }.bind(this), 800);
+    }, 800);
   }
 });
