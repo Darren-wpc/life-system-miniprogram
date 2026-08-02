@@ -3,6 +3,7 @@
 // P2-8: 数据版本号
 const SCHEMA_VERSION = 2;
 
+// P2-22: STORAGE_KEYS 集中管理所有存储 key，可遍历用于批量清除，避免手动列举遗漏
 const STORAGE_KEYS = {
   WEEKLY_SCORES: 'ls_weekly_scores',
   FACTOR_SCORES: 'ls_factor_scores',
@@ -406,6 +407,8 @@ function init() {
 
 module.exports = {
   init,
+  // P2-23: 导出 SCHEMA_VERSION 供 constants.js 统一引用，避免多处硬编码
+  SCHEMA_VERSION,
   weekly: weeklyDB,
   factors: factorDB,
   resources: resourceDB,

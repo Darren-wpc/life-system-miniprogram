@@ -2,7 +2,7 @@
 
 const db = require('../../utils/db');
 const diagnosis = require('../../utils/diagnosis');
-const { DIMENSIONS, DIM_KEYS, FACTORS, RESOURCE_TYPES, COLORS } = require('../../utils/constants');
+const { DIMENSIONS, DIM_KEYS, FACTORS, RESOURCE_TYPES, COLORS, FACTOR_BOTTLENECK_THRESHOLD } = require('../../utils/constants');
 const { haptic } = require('../../utils/common');
 const ai = require('../../utils/ai');
 
@@ -62,112 +62,121 @@ Page({
    * P1-5: 同时加载五因子和资源数据，闭环接入首页
    */
   _loadDashboardData() {
-    const today = new Date();
-    const dateStr = db.getDateStr(today);
-    const weekId = db.getWeekId(today);
-    const quarterId = db.getQuarterId(today);
+    // P2-24: 包裹 try-catch，防止数据格式异常时 loading 永远为 true（骨架屏永久卡住）
+    try {
+      const today = new Date();
+      const dateStr = db.getDateStr(today);
+      const weekId = db.getWeekId(today);
+      const quarterId = db.getQuarterId(today);
 
-    this.setData({ currentDate: dateStr, loading: true });
+      this.setData({ currentDate: dateStr, loading: true });
 
-    // 1. 检查完成状态
-    this._checkCompletionStatus(dateStr, weekId, quarterId);
+      // 1. 检查完成状态
+      this._checkCompletionStatus(dateStr, weekId, quarterId);
 
-    // P1-5: 获取全部评估数据（周评 + 五因子 + 资源）
-    const latestScore = db.weekly.getLatest();
-    const previousScore = db.weekly.getPrevious();
-    const latestFactors = db.factors.getLatest();
-    const savedResources = db.resources.get();
+      // P1-5: 获取全部评估数据（周评 + 五因子 + 资源）
+      const latestScore = db.weekly.getLatest();
+      const previousScore = db.weekly.getPrevious();
+      const latestFactors = db.factors.getLatest();
+      const savedResources = db.resources.get();
 
-    if (!latestScore) {
-      this.setData({ hasData: false, loading: false });
-      wx.nextTick(() => {
-        this._drawEmptyRadar();
-      });
-      return;
-    }
+      if (!latestScore) {
+        this.setData({ hasData: false, loading: false });
+        wx.nextTick(() => {
+          this._drawEmptyRadar();
+        });
+        return;
+      }
 
-    // 3. 构建维度卡片
-    const dimensionCards = this._buildDimensionCards(latestScore, previousScore);
+      // 3. 构建维度卡片
+      const dimensionCards = this._buildDimensionCards(latestScore, previousScore);
 
-    // 4. 计算综合健康度
-    const overallHealth = diagnosis.calcOverallHealth(latestScore);
-    const overallStatus = diagnosis.getStatus(parseFloat(overallHealth));
+      // 4. 计算综合健康度
+      const overallHealth = diagnosis.calcOverallHealth(latestScore);
+      const overallStatus = diagnosis.getStatus(parseFloat(overallHealth));
 
-    // 5. 运行诊断，生成洞察
-    const insights = diagnosis.generateInsights(latestScore, previousScore);
+      // 5. 运行诊断，生成洞察
+      const insights = diagnosis.generateInsights(latestScore, previousScore);
 
-    // P1-5: 处理五因子数据
-    let factorProduct = 0;
-    let factorProductPercent = 0;
-    let factorBottleneck = '';
-    let hasFactorData = false;
+      // P1-5: 处理五因子数据
+      let factorProduct = 0;
+      let factorProductPercent = 0;
+      let factorBottleneck = '';
+      let hasFactorData = false;
 
-    if (latestFactors) {
-      hasFactorData = true;
-      factorProduct = diagnosis.calcProduct(latestFactors);
-      factorProductPercent = Math.round(factorProduct * 100);
-      const bottleneckKey = diagnosis.findBottleneckFactor(latestFactors);
-      if (bottleneckKey && FACTORS[bottleneckKey]) {
-        factorBottleneck = FACTORS[bottleneckKey].name;
-        // 将因子瓶颈加入洞察
-        if (latestFactors[bottleneckKey] < 0.5) {
+      if (latestFactors) {
+        hasFactorData = true;
+        factorProduct = diagnosis.calcProduct(latestFactors);
+        factorProductPercent = Math.round(factorProduct * 100);
+        const bottleneckKey = diagnosis.findBottleneckFactor(latestFactors);
+        if (bottleneckKey && FACTORS[bottleneckKey]) {
+          factorBottleneck = FACTORS[bottleneckKey].name;
+          // 将因子瓶颈加入洞察
+          // P2-18: 统一使用 FACTOR_BOTTLENECK_THRESHOLD 常量
+          if (latestFactors[bottleneckKey] < FACTOR_BOTTLENECK_THRESHOLD) {
+            insights.push({
+              type: 'warning',
+              title: '五因子瓶颈',
+              text: `「${factorBottleneck}」是当前最弱因子，提升它可大幅放大整体效能`
+            });
+          }
+        }
+      }
+
+      // P1-5: 处理资源数据
+      let resourceFilled = 0;
+      let hasResourceData = false;
+      const resourceKeys = Object.keys(RESOURCE_TYPES);
+
+      if (savedResources && savedResources.metrics) {
+        hasResourceData = true;
+        resourceKeys.forEach(key => {
+          const metrics = savedResources.metrics[key];
+          if (metrics) {
+            const hasValues = Object.values(metrics).some(v => v !== '' && v !== undefined && v !== null);
+            if (hasValues) resourceFilled++;
+          }
+        });
+
+        // 资源健康度洞察
+        if (resourceFilled <= 2) {
           insights.push({
-            type: 'warning',
-            title: '五因子瓶颈',
-            text: `「${factorBottleneck}」是当前最弱因子，提升它可大幅放大整体效能`
+            type: 'info',
+            title: '资源盘点提醒',
+            text: `仅盘点了 ${resourceFilled} 类资源，建议完善资源盘点以获得全面诊断`
           });
         }
       }
-    }
 
-    // P1-5: 处理资源数据
-    let resourceFilled = 0;
-    let hasResourceData = false;
-    const resourceKeys = Object.keys(RESOURCE_TYPES);
-
-    if (savedResources && savedResources.metrics) {
-      hasResourceData = true;
-      resourceKeys.forEach(key => {
-        const metrics = savedResources.metrics[key];
-        if (metrics) {
-          const hasValues = Object.values(metrics).some(v => v !== '' && v !== undefined && v !== null);
-          if (hasValues) resourceFilled++;
-        }
+      this.setData({
+        hasData: true,
+        loading: false,
+        dimensionCards,
+        overallHealth,
+        overallStatus,
+        insights,
+        factorProduct: parseFloat(factorProduct.toFixed(2)),
+        factorProductPercent,
+        factorBottleneck,
+        hasFactorData,
+        resourceFilled,
+        hasResourceData,
+        bottomlineAlerts: this._checkBottomlineAlerts(latestScore)
       });
 
-      // 资源健康度洞察
-      if (resourceFilled <= 2) {
-        insights.push({
-          type: 'info',
-          title: '资源盘点提醒',
-          text: `仅盘点了 ${resourceFilled} 类资源，建议完善资源盘点以获得全面诊断`
-        });
-      }
+      // 6. 绘制雷达图（延迟确保 canvas 已渲染）
+      wx.nextTick(() => {
+        this._drawRadarChart(latestScore, previousScore);
+      });
+
+      // 7. 加载 AI 深度解读
+      this._loadAIInsight();
+    } catch (err) {
+      // P2-24: 异常时确保 loading 置为 false 并提示用户，避免骨架屏永久卡住
+      console.error('_loadDashboardData error:', err);
+      this.setData({ loading: false, hasData: false });
+      wx.showToast({ title: '数据加载失败', icon: 'none' });
     }
-
-    this.setData({
-      hasData: true,
-      loading: false,
-      dimensionCards,
-      overallHealth,
-      overallStatus,
-      insights,
-      factorProduct: parseFloat(factorProduct.toFixed(2)),
-      factorProductPercent,
-      factorBottleneck,
-      hasFactorData,
-      resourceFilled,
-      hasResourceData,
-      bottomlineAlerts: this._checkBottomlineAlerts(latestScore)
-    });
-
-    // 6. 绘制雷达图（延迟确保 canvas 已渲染）
-    wx.nextTick(() => {
-      this._drawRadarChart(latestScore, previousScore);
-    });
-
-    // 7. 加载 AI 深度解读
-    this._loadAIInsight();
   },
 
   /**

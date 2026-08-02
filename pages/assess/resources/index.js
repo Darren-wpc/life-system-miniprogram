@@ -1,7 +1,6 @@
 // pages/assess/resources/index.js
 const db = require('../../../utils/db');
 const constants = require('../../../utils/constants');
-const diagnosis = require('../../../utils/diagnosis');
 const { haptic, confirmDelete } = require('../../../utils/common');
 
 // 七类资源的核心指标定义
@@ -65,9 +64,45 @@ function _normalizeMoneyMetric(metricKey, num) {
   }
 }
 
-function getHealthStatus(resourceKey, metrics) {
+function getHealthStatus(resourceKey, metrics, relLevels) {
   const metricDefs = RESOURCE_METRICS[resourceKey] || [];
-  if (!metricDefs.length || !metrics) return 'yellow';
+  if (!metricDefs.length && resourceKey !== 'relationship') return 'yellow';
+  if (!metrics && !relLevels) return 'yellow';
+
+  // P1-12: relationship 特殊处理 — 基于 L1-L4 关系层级计算健康状态
+  if (resourceKey === 'relationship') {
+    if (!relLevels) return 'yellow';
+    // L1(浅社交)=1分, L2(同事/熟人)=2分, L3(朋友)=3分, L4(亲密关系)=5分
+    const levelWeights = { L1: 1, L2: 2, L3: 3, L4: 5 };
+    let totalScore = 0;
+    let count = 0;
+    LEVEL_KEYS.forEach(level => {
+      const levelData = relLevels[level];
+      if (levelData && levelData.names) {
+        const validNames = levelData.names.filter(n => n && n.trim());
+        if (validNames.length > 0) {
+          const weight = levelWeights[level] || 0;
+          // 每层至少1人即得分，多人有递减效益（对数缩放）
+          const score = Math.min(5, weight * (1 + Math.log(validNames.length)));
+          totalScore += score;
+          count++;
+        }
+      }
+    });
+    // 同时考虑 closeCount 指标（如果用户填了）
+    if (metrics && metrics.closeCount !== undefined && metrics.closeCount !== null && metrics.closeCount !== '') {
+      const num = parseFloat(metrics.closeCount);
+      if (!isNaN(num)) {
+        totalScore += Math.min(5, num * (5 / 3)); // 3人=满分
+        count++;
+      }
+    }
+    if (count === 0) return 'yellow';
+    const avgScore = totalScore / count;
+    if (avgScore >= constants.HEALTH_THRESHOLDS.RESOURCE_GREEN) return 'green';
+    if (avgScore >= constants.HEALTH_THRESHOLDS.RESOURCE_YELLOW) return 'yellow';
+    return 'red';
+  }
 
   // 计算核心指标的综合分
   let totalScore = 0;
@@ -81,8 +116,8 @@ function getHealthStatus(resourceKey, metrics) {
         if (resourceKey === 'money') {
           totalScore += _normalizeMoneyMetric(m.key, num);
         } else if (INVERTED_METRICS.indexOf(m.key) >= 0) {
-          // P1-9: 反向指标（值越低越好，如压力水平），反转 1-5 量纲：5→0, 1→4
-          totalScore += Math.max(0, Math.min(5, 5 - num));
+          // P1-11: 反向指标（值越低越好，如压力水平），反转 1-5 量纲：1→5满分, 5→1最低分
+          totalScore += Math.max(0, Math.min(5, 6 - num));
         } else {
           totalScore += Math.min(5, num);
         }
@@ -122,6 +157,14 @@ Page({
   // P1-4: 数据加载统一放 onShow
   onShow() {
     this._loadData();
+  },
+
+  // P2-19: 页面卸载时清除 debounce 定时器，防止内存泄漏
+  onUnload() {
+    if (this._debounceTimer) {
+      clearTimeout(this._debounceTimer);
+      this._debounceTimer = null;
+    }
   },
 
   _loadData() {
@@ -167,7 +210,7 @@ Page({
     // 计算健康状态
     const healthSummary = { green: 0, yellow: 0, red: 0 };
     resourceKeys.forEach(key => {
-      const status = getHealthStatus(key, metricsData[key]);
+      const status = getHealthStatus(key, metricsData[key], relLevels);
       healthSummary[status]++;
       const idx = resources.findIndex(r => r.key === key);
       if (idx >= 0) resources[idx].status = status;
@@ -218,10 +261,10 @@ Page({
   },
 
   _recalcHealth() {
-    const { resources, metricsData } = this.data;
+    const { resources, metricsData, relLevels } = this.data;
     const healthSummary = { green: 0, yellow: 0, red: 0 };
     resources.forEach(res => {
-      const status = getHealthStatus(res.key, metricsData[res.key]);
+      const status = getHealthStatus(res.key, metricsData[res.key], relLevels);
       healthSummary[status]++;
       res.status = status;
     });
@@ -242,10 +285,18 @@ Page({
   onMetricInput(e) {
     const { resourceKey, metricKey } = e.currentTarget.dataset;
     const value = e.detail.value;
+    // P2-19: 每次输入只更新输入值，不立即重算健康
     this.setData({
       [`metricsData.${resourceKey}.${metricKey}`]: value
     });
-    this._recalcHealth();
+    // P2-19: debounce 300ms 后再执行健康重算，避免每次按键都全量重算
+    if (this._debounceTimer) {
+      clearTimeout(this._debounceTimer);
+    }
+    this._debounceTimer = setTimeout(() => {
+      this._recalcHealth();
+      this._debounceTimer = null;
+    }, 300);
   },
 
   onRelNameInput(e) {

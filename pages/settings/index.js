@@ -2,8 +2,9 @@
 
 const db = require('../../utils/db');
 const ai = require('../../utils/ai');
+// P2-23: 从 constants 统一导入 APP_VERSION，不再硬编码
+const { APP_VERSION } = require('../../utils/constants');
 
-const APP_VERSION = 'v2.2.0';
 const DEFAULT_REMINDER = '21:00';
 
 Page({
@@ -174,38 +175,19 @@ Page({
 
   /**
    * 执行清除：逐项移除业务数据，保留并重置设置
-   * P1-10: 补充清除 RESOURCE_TRANSFORMS
-   * AI: 清除 AI 缓存和对话历史
+   * P2-22: 改为遍历 STORAGE_KEYS 自动清除所有 key，避免手动列举遗漏
+   * AI: 清除 AI 缓存和对话历史（AI key 不在 STORAGE_KEYS 中，单独遍历清除）
    */
   _doClear() {
     this.setData({ clearing: true });
     try {
       const keys = db.tool.getKeys();
-      wx.removeStorageSync(keys.WEEKLY_SCORES);
-      wx.removeStorageSync(keys.FACTOR_SCORES);
-      wx.removeStorageSync(keys.RESOURCES);
-      wx.removeStorageSync(keys.DAILY_FEEDBACK);
-      wx.removeStorageSync(keys.QUARTERLY_REVIEW);
-      wx.removeStorageSync(keys.TOOL_NOTODO);
-      wx.removeStorageSync(keys.TOOL_BOTTOMLINE);
-      wx.removeStorageSync(keys.TOOL_EXCHANGE);
-      wx.removeStorageSync(keys.TOOL_INTERRUPT);
-      wx.removeStorageSync(keys.TOOL_UNCONTROLLABLE);
-      wx.removeStorageSync(keys.TOOL_RESTART);
-      wx.removeStorageSync(keys.NARRATIVE);
-      wx.removeStorageSync(keys.PIVOT);
-      // P1-10: 补充清除资源转化记录
-      wx.removeStorageSync(keys.RESOURCE_TRANSFORMS);
+      // P2-22: 遍历所有 STORAGE_KEYS 自动清除，新增 key 时无需手动添加
+      Object.values(keys).forEach(k => wx.removeStorageSync(k));
 
-      // 清除 AI 相关数据
+      // 清除 AI 相关数据（AI key 不在 STORAGE_KEYS 中，单独遍历清除）
       const aiKeys = ai.KEYS;
-      wx.removeStorageSync(aiKeys.AI_INSIGHT_CACHE);
-      wx.removeStorageSync(aiKeys.AI_CHAT_HISTORY);
-      wx.removeStorageSync(aiKeys.AI_SETTINGS);
-      // P2-2: 清除 AI 用量统计
-      if (aiKeys.AI_USAGE) {
-        wx.removeStorageSync(aiKeys.AI_USAGE);
-      }
+      Object.values(aiKeys).forEach(k => wx.removeStorageSync(k));
 
       // 重置设置为默认值
       db.settings.save({ dailyReminder: DEFAULT_REMINDER });

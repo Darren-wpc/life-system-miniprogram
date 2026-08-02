@@ -37,13 +37,14 @@ Page({
    */
   _buildTools() {
     const toolTypes = constants.TOOL_TYPES;
+    // P3-10: 直接使用 emoji 字符，替代 Unicode 转义序列以提升可读性
     const toolEmojis = {
-      notodo: '\uD83D\uDEE1',
-      bottomline: '\uD83D\uDD3C',
-      exchange: '\u2696',
-      interrupt: '\uD83D\uDD04',
-      uncontrollable: '\uD83C\uDF2C',
-      restart: '\uD83D\uDD04'
+      notodo: '🛡',
+      bottomline: '🔼',
+      exchange: '⚖',
+      interrupt: '🔄',
+      uncontrollable: '🌬',
+      restart: '🔄'
     };
     const toolColors = {
       notodo: '#0d9488',
@@ -68,7 +69,8 @@ Page({
         key,
         name: t.name,
         desc: t.desc,
-        icon: toolEmojis[key] || '\uD83D\uDCE6',
+        // P3-10: 直接使用 emoji 字符作为默认图标
+        icon: toolEmojis[key] || '📦',
         color: toolColors[key] || '#0d9488',
         page: toolPages[key] || ''
       };

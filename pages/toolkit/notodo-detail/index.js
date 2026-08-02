@@ -113,7 +113,7 @@ Page({
       const items = this.data.items.filter((item) => item.id !== id);
       this.setData({ items });
       this._saveData();
-      haptic();
+      // P2-20: haptic() 已在 confirmDelete 中统一调用，此处不再重复
       wx.showToast({ title: '已删除', icon: 'success' });
     });
   }

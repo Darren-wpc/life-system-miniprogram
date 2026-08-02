@@ -138,10 +138,13 @@ Page({
       }
       quarterData[qId].count++;
       constants.DIM_KEYS.forEach((k) => {
-        const score = record[k] || 0;
-        quarterData[qId].dims[k] += score;
-        if (score <= 2) {
-          lowDimQuarters[k].add(qId);
+        const score = record[k];
+        // P1-15: 跳过 undefined/null 评分，不当作 0 分
+        if (score !== undefined && score !== null && !isNaN(score)) {
+          quarterData[qId].dims[k] += score;
+          if (score <= 2) {
+            lowDimQuarters[k].add(qId);
+          }
         }
       });
     });
@@ -186,7 +189,9 @@ Page({
     let consecutiveLow = 0;
     let maxConsecutive = 0;
     for (let i = 0; i < recentWeeks.length; i++) {
-      if ((recentWeeks[i].survival || 0) <= 2) {
+      const survivalScore = recentWeeks[i].survival;
+      // P1-15: 跳过 undefined/null 评分，不当作 0 分
+      if (survivalScore !== undefined && survivalScore !== null && !isNaN(survivalScore) && survivalScore <= 2) {
         consecutiveLow++;
         maxConsecutive = Math.max(maxConsecutive, consecutiveLow);
       } else {

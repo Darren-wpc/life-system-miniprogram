@@ -1,7 +1,6 @@
 // pages/profile/narrative/index.js - 叙事一致性记录
 
 const db = require('../../../utils/db');
-const constants = require('../../../utils/constants');
 
 Page({
   data: {
@@ -68,6 +67,8 @@ Page({
         'questions[1].value': latest.carrying || '',
         'questions[2].value': latest.honesty || ''
       });
+      // P1-16: 加载已有记录后更新已填写计数，避免进度条显示 0/3
+      this._updateFilledCount();
     } else {
       // 本季度无记录 —— 编辑模式
       this.setData({

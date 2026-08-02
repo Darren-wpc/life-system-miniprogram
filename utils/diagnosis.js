@@ -15,9 +15,11 @@ const findCollapsePoints = (current, previous) => {
 
   DIM_KEYS.forEach((key) => {
     const score = current[key];
+    // P1-17: 跳过 null/undefined 评分，避免 null<=2 误判为崩溃点
+    if (score === null || score === undefined || isNaN(score)) return;
     if (score <= 2) {
       results.push({ key, reason: 'current_low', score });
-    } else if (previous && previous[key] > score) {
+    } else if (previous && previous[key] !== undefined && previous[key] !== null && previous[key] > score) {
       results.push({ key, reason: 'declining', score, prev: previous[key] });
     }
   });
@@ -53,7 +55,11 @@ const findLeveragePoint = (current) => {
 const findImbalancePoints = (current, previous) => {
   if (!current) return [];
 
-  const scores = DIM_KEYS.map((k) => ({ key: k, score: current[k] || 0 }));
+  // P1-17: 过滤掉 null/undefined 评分，不当作 0 分
+  const scores = DIM_KEYS
+    .filter((k) => current[k] !== null && current[k] !== undefined && !isNaN(current[k]))
+    .map((k) => ({ key: k, score: current[k] }));
+  if (scores.length === 0) return [];
   scores.sort((a, b) => a.score - b.score);
   const minScore = scores[0].score;
   const minKey = scores[0].key;

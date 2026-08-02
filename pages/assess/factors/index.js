@@ -2,6 +2,8 @@
 const db = require('../../../utils/db');
 const constants = require('../../../utils/constants');
 const diagnosis = require('../../../utils/diagnosis');
+// P3-11: 导入 haptic 用于保存成功后的触觉反馈
+const { haptic } = require('../../../utils/common');
 
 Page({
   data: {
@@ -12,6 +14,8 @@ Page({
     bottleneckKey: null,
     bottleneckName: '',
     bottleneckValue: 0,
+    // P2-18: 导出瓶颈阈值供 WXML 引用（WXML 无法直接 require constants）
+    bottleneckThreshold: constants.FACTOR_BOTTLENECK_THRESHOLD,
     prediction: null,
     saving: false
   },
@@ -60,7 +64,8 @@ Page({
     });
 
     let prediction = null;
-    if (bottleneckKey && scores[bottleneckKey] < 0.5) {
+    // P2-18: 统一使用 FACTOR_BOTTLENECK_THRESHOLD 常量
+    if (bottleneckKey && scores[bottleneckKey] < constants.FACTOR_BOTTLENECK_THRESHOLD) {
       const pred = diagnosis.predictImprovement(scores, 0.5);
       if (pred) {
         prediction = {
@@ -99,6 +104,8 @@ Page({
     const { scores } = this.data;
     try {
       db.factors.save(scores);
+      // P3-11: 保存成功后添加触觉反馈
+      haptic();
       wx.showToast({ title: '保存成功', icon: 'success' });
     } catch (err) {
       console.error('factors save error:', err);

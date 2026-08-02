@@ -2,6 +2,8 @@
 const db = require('../../../utils/db');
 const constants = require('../../../utils/constants');
 const ai = require('../../../utils/ai');
+// P3-11: 导入 haptic 用于保存成功后的触觉反馈
+const { haptic } = require('../../../utils/common');
 
 Page({
   data: {
@@ -92,6 +94,8 @@ Page({
 
     try {
       db.weekly.save(data);
+      // P3-11: 保存成功后添加触觉反馈
+      haptic();
       wx.showToast({ title: '保存成功', icon: 'success' });
 
       // 保存后触发 AI 深度解读

@@ -1,5 +1,10 @@
 // utils/constants.js
 
+// P2-23: 集中管理版本号，避免在 settings/export 等多处独立硬编码
+// SCHEMA_VERSION 从 db.js 导出，APP_VERSION 在此处统一定义
+const { SCHEMA_VERSION } = require('./db');
+const APP_VERSION = 'v2.2.0';
+
 const DIMENSIONS = {
   survival: { key: 'survival', name: '生存基础', desc: '健康、安全、睡眠、饮食、住处、基本收入', icon: '❤' },
   autonomy: { key: 'autonomy', name: '自主权', desc: '时间是否属于自己，能否拒绝，能否选择', icon: '⭐' },
@@ -102,6 +107,9 @@ const HEALTH_THRESHOLDS = {
   RESOURCE_YELLOW: 2    // 资源健康度：≥2 为黄色
 };
 
+// P2-18: 五因子瓶颈告警阈值，统一引用此常量避免 0.3/0.5 不一致
+const FACTOR_BOTTLENECK_THRESHOLD = 0.5;
+
 // P2-14: 集中管理列表存储上限
 const RETENTION_DAYS = {
   WEEKLY_SCORES: 104,
@@ -114,6 +122,9 @@ const RETENTION_DAYS = {
 };
 
 module.exports = {
+  // P2-23: 统一导出版本号常量
+  APP_VERSION,
+  SCHEMA_VERSION,
   DIMENSIONS,
   DIM_KEYS,
   FACTORS,
@@ -126,5 +137,6 @@ module.exports = {
   MOOD_EMOJIS,
   COLORS,
   HEALTH_THRESHOLDS,
+  FACTOR_BOTTLENECK_THRESHOLD,
   RETENTION_DAYS
 };

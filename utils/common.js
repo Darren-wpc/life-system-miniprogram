@@ -61,6 +61,7 @@ const haptic = () => {
 
 /**
  * P1-1: 通用删除确认弹窗
+ * P2-20: 统一在此处调用 haptic()，回调中不再重复调用，避免双重震动
  * @param {string} itemName 被删除项名称（可选）
  * @param {Function} onConfirm 用户确认后的回调
  */

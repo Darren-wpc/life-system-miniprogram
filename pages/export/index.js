@@ -2,6 +2,8 @@
 
 const db = require('../../utils/db');
 const ai = require('../../utils/ai');
+// P2-23: 从 constants 统一导入版本号，不再硬编码
+const { APP_VERSION, SCHEMA_VERSION } = require('../../utils/constants');
 
 Page({
   data: {
@@ -171,8 +173,9 @@ Page({
   _buildExportData() {
     const keys = db.tool.getKeys();
     return {
-      appVersion: 'v2.2.0',
-      schemaVersion: 2,
+      // P2-23: 使用从 constants 导入的版本号常量
+      appVersion: APP_VERSION,
+      schemaVersion: SCHEMA_VERSION,
       exportTime: this._formatTime(Date.now()),
       weekly: db.weekly.getAll(),
       factors: db.factors.getAll(),

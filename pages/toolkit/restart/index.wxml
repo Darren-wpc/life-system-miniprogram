@@ -60,7 +60,9 @@
   <!-- 空状态 -->
   <view wx:if="{{scripts.length === 0 && !showAdd}}" class="empty-state">
     <text class="empty-icon">🔄</text>
-    <text class="empty-text">还没有重启剧本\n为最坏的情况提前做好准备</text>
+    <!-- P3-12: 使用两个 text 元素实现换行，\n 在 WXML 中会显示为字面字符 -->
+    <text class="empty-text">还没有重启剧本</text>
+    <text class="empty-text">为最坏的情况提前做好准备</text>
   </view>
 
   <!-- 添加按钮 -->

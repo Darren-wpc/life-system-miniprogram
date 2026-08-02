@@ -15,7 +15,8 @@
   </view>
 
   <!-- 瓶颈提醒 -->
-  <view class="callout callout-danger" wx:if="{{bottleneckKey && bottleneckValue < 0.3}}">
+  <!-- P2-18: 使用 data 中导出的 bottleneckThreshold 常量，替代硬编码 0.3 -->
+  <view class="callout callout-danger" wx:if="{{bottleneckKey && bottleneckValue < bottleneckThreshold}}">
     <view class="callout-title">瓶颈因子：{{bottleneckName}}</view>
     <view class="callout-text">当前值 {{bottleneckValue}}，严重拖累整体效能</view>
   </view>

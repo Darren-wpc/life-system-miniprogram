@@ -28,7 +28,8 @@ Page({
     const saved = db.tool.get(keys.TOOL_RESTART);
     let scripts = [];
 
-    if (saved && saved.scripts && Array.isArray(saved.scripts) && saved.scripts.length > 0) {
+    if (saved && saved.scripts && Array.isArray(saved.scripts)) {
+      // P1-14: 即使 scripts 为空数组也正常加载，不再自动恢复默认场景
       scripts = saved.scripts.map((s) => {
         return {
           id: s.id,
@@ -39,7 +40,7 @@ Page({
         };
       });
     } else {
-      // P1-6: 首次生成默认场景后立即保存
+      // P1-6: 首次访问（无存储记录）才生成默认场景
       scripts = DEFAULT_SCENARIOS.map((s) => {
         return {
           id: generateId(),
@@ -144,7 +145,7 @@ Page({
       const scripts = this.data.scripts.filter((s) => s.id !== id);
       this.setData({ scripts });
       this._saveData();
-      haptic();
+      // P2-20: haptic() 已在 confirmDelete 中统一调用，此处不再重复
       wx.showToast({ title: '已删除', icon: 'success' });
     });
   }

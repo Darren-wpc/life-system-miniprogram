@@ -12,6 +12,8 @@ Page({
     sections: SECTIONS,
     form: { day1: '', day3: '', week1: '' },
     filledCount: 0,
+    // P1-13: filledKeys 用于 WXML badge 颜色判断
+    filledKeys: { day1: false, day3: false, week1: false },
     saving: false
   },
 
@@ -28,10 +30,11 @@ Page({
       if (saved.week1 !== undefined && saved.week1 !== null) form.week1 = saved.week1;
     }
     let filledCount = 0;
-    if (form.day1 && form.day1.trim()) filledCount++;
-    if (form.day3 && form.day3.trim()) filledCount++;
-    if (form.week1 && form.week1.trim()) filledCount++;
-    this.setData({ form, filledCount });
+    const filledKeys = { day1: false, day3: false, week1: false };
+    if (form.day1 && form.day1.trim()) { filledCount++; filledKeys.day1 = true; }
+    if (form.day3 && form.day3.trim()) { filledCount++; filledKeys.day3 = true; }
+    if (form.week1 && form.week1.trim()) { filledCount++; filledKeys.week1 = true; }
+    this.setData({ form, filledCount, filledKeys });
   },
 
   _saveData() {
@@ -52,11 +55,12 @@ Page({
   // P1-2 fix: silent save on blur, no toast (fix UX bug)
   onBlur() {
     let filledCount = 0;
+    const filledKeys = { day1: false, day3: false, week1: false };
     const form = this.data.form;
-    if (form.day1 && form.day1.trim()) filledCount++;
-    if (form.day3 && form.day3.trim()) filledCount++;
-    if (form.week1 && form.week1.trim()) filledCount++;
-    this.setData({ filledCount });
+    if (form.day1 && form.day1.trim()) { filledCount++; filledKeys.day1 = true; }
+    if (form.day3 && form.day3.trim()) { filledCount++; filledKeys.day3 = true; }
+    if (form.week1 && form.week1.trim()) { filledCount++; filledKeys.week1 = true; }
+    this.setData({ filledCount, filledKeys });
     this._saveData();
   }
 });
