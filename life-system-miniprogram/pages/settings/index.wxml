@@ -1,0 +1,150 @@
+<!--pages/settings/index.wxml - 设置-->
+<view class="page-container">
+
+  <!-- 提醒设置 -->
+  <view class="section-title">提醒设置</view>
+  <view class="card">
+    <view class="list-item">
+      <view class="item-label">
+        <text class="row-title">每日提醒时间</text>
+        <text class="row-desc text-muted">每日到此时间提醒你记录反馈</text>
+      </view>
+      <picker mode="time" value="{{dailyReminder}}" bindchange="onReminderChange">
+        <view class="time-value">
+          <text class="time-text">{{dailyReminder}}</text>
+          <text class="time-arrow text-muted">></text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- AI 设置 -->
+  <view class="section-title">AI 智能教练</view>
+  <view class="card">
+    <view class="list-item">
+      <view class="item-label">
+        <text class="row-title">AI 深度解读</text>
+        <text class="row-desc text-muted">基于人生框架的智能分析与建议</text>
+      </view>
+      <switch checked="{{aiEnabled}}" bindchange="onAIToggle" color="#0d9488" />
+    </view>
+    <view class="list-item" wx:if="{{aiEnabled}}">
+      <view class="item-label">
+        <text class="row-title">云端 AI 模式</text>
+        <text class="row-desc text-muted">开启后使用云端大模型，关闭则使用本地引擎</text>
+      </view>
+      <switch checked="{{cloudEnabled}}" bindchange="onCloudToggle" color="#0d9488" />
+    </view>
+  </view>
+
+  <view class="callout callout-info" wx:if="{{aiEnabled}}">
+    <text>AI 教练基于你的六维健康度和五因子数据，提供个性化深度解读。{{cloudEnabled ? '当前使用云端大模型，回答更精准。' : '当前使用本地引擎，开启云端模式可获得更深度分析。'}}</text>
+  </view>
+
+  <!-- P2-2: AI 用量统计 -->
+  <view class="card ai-usage-card" wx:if="{{aiEnabled && aiUsage}}">
+    <view class="usage-header">
+      <text class="usage-title">AI 用量统计</text>
+      <text class="usage-reset" bindtap="onResetUsage">重置</text>
+    </view>
+    <view class="usage-grid">
+      <view class="usage-item">
+        <text class="usage-num">{{aiUsage.totalCalls}}</text>
+        <text class="usage-label">总调用</text>
+      </view>
+      <view class="usage-item">
+        <text class="usage-num">{{aiUsage.cloudCalls}}</text>
+        <text class="usage-label">云端</text>
+      </view>
+      <view class="usage-item">
+        <text class="usage-num">{{aiUsage.localCalls}}</text>
+        <text class="usage-label">本地</text>
+      </view>
+    </view>
+    <view class="usage-breakdown" wx:if="{{aiUsage.byAction}}">
+      <view class="breakdown-row">
+        <text class="breakdown-label">周度解读</text>
+        <text class="breakdown-val">{{aiUsage.byAction.weeklyInsight || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">对话辅导</text>
+        <text class="breakdown-val">{{aiUsage.byAction.coachChat || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">目标引导</text>
+        <text class="breakdown-val">{{aiUsage.byAction.goalGuidance || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">每日解读</text>
+        <text class="breakdown-val">{{aiUsage.byAction.dailyReflect || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">季度总结</text>
+        <text class="breakdown-val">{{aiUsage.byAction.quarterlySummary || 0}}</text>
+      </view>
+      <view class="breakdown-row">
+        <text class="breakdown-label">转向检测</text>
+        <text class="breakdown-val">{{aiUsage.byAction.pivotCheck || 0}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- F1: 订阅消息推送（独立于 AI，无需 aiEnabled） -->
+  <view class="section-title">消息推送</view>
+  <view class="card">
+    <!-- 一键授权全部 -->
+    <button class="btn-subscribe-all" bindtap="onSubscribeAll" disabled="{{subscribing}}">
+      {{subscribing ? '授权中...' : '一键授权全部'}}
+    </button>
+
+    <!-- 订阅类型列表 -->
+    <view class="subscribe-list">
+      <view class="list-item subscribe-item" wx:for="{{subscribeList}}" wx:key="id" data-type="{{item.id}}" bindtap="onSubscribeTap">
+        <view class="item-label">
+          <text class="row-title">{{item.name}}</text>
+          <text class="row-desc text-muted">{{item.desc}}</text>
+        </view>
+        <view class="subscribe-status">
+          <text class="status-text {{item.needsReauth ? 'text-accent' : 'text-primary'}}">{{item.statusText}}</text>
+          <text class="time-arrow text-muted">></text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="callout callout-info">
+    <text>订阅消息需微信授权，每次授权可接收一条推送。用完后需重新授权，点击对应项目或「一键授权全部」进行授权。</text>
+  </view>
+
+  <!-- 关于 -->
+  <view class="section-title">关于</view>
+  <view class="card">
+    <view class="list-item">
+      <text class="item-label">应用名称</text>
+      <text class="item-value">人生系统</text>
+    </view>
+    <view class="list-item">
+      <text class="item-label">当前版本</text>
+      <text class="item-value">{{appVersion}}</text>
+    </view>
+    <view class="list-item">
+      <text class="item-label">数据存储</text>
+      <text class="item-value">本地（仅本机）</text>
+    </view>
+  </view>
+
+  <view class="callout callout-info">
+    <text>你的所有数据仅保存在本机微信小程序缓存中，不会上传服务器。清除微信缓存或卸载小程序将导致数据丢失，请定期使用「数据管理」导出备份。</text>
+  </view>
+
+  <!-- 危险操作区 -->
+  <view class="section-title danger-title">数据管理</view>
+  <view class="card danger-card">
+    <view class="danger-desc">
+      <text>清除全部数据将删除所有评估、反馈、工具箱、叙事与AI缓存记录，且不可恢复。建议先导出备份。</text>
+    </view>
+    <button class="btn-danger" bindtap="onClearData" disabled="{{clearing}}">
+      {{clearing ? '清除中...' : '清除全部数据'}}
+    </button>
+  </view>
+
+</view>

@@ -1,0 +1,326 @@
+<!--pages/index/index.wxml - 六维健康度仪表盘首页-->
+
+<!-- P2-9: 骨架屏加载占位 -->
+<view class="skeleton-wrap" wx:if="{{loading}}">
+  <view class="skeleton-header">
+    <view class="skeleton-block skeleton-title"></view>
+    <view class="skeleton-block skeleton-date"></view>
+  </view>
+  <view class="skeleton-badges">
+    <view class="skeleton-block skeleton-badge"></view>
+    <view class="skeleton-block skeleton-badge"></view>
+    <view class="skeleton-block skeleton-badge"></view>
+  </view>
+  <view class="skeleton-block skeleton-radar"></view>
+  <view class="skeleton-block skeleton-card"></view>
+  <view class="skeleton-block skeleton-card"></view>
+</view>
+
+<block wx:elif="{{!hasData}}">
+  <!-- 空状态引导 -->
+  <view class="empty-state">
+    <view class="empty-icon-wrap">
+      <canvas type="2d" id="emptyRadar" class="empty-radar-canvas"></canvas>
+    </view>
+    <view class="empty-text">完成本周自评，生成你的健康度雷达图</view>
+    <view class="btn-primary empty-btn" bindtap="goToWeeklyAssess">开始自评</view>
+  </view>
+</block>
+
+<!-- 有数据时的仪表盘 -->
+<view class="dashboard" wx:else>
+
+  <!-- 顶部区：日期 + 完成状态徽章 -->
+  <view class="header">
+    <view class="header-left">
+      <text class="header-title">人生系统</text>
+    </view>
+    <view class="header-right">
+      <text class="header-date">{{currentDate}}</text>
+    </view>
+  </view>
+
+  <!-- 完成状态徽章行 -->
+  <view class="status-badges">
+    <view class="status-badge {{todayDone ? 'badge-green' : 'badge-gray'}}">
+      <text class="badge-dot {{todayDone ? 'dot-green' : 'dot-gray'}}"></text>
+      <text>日</text>
+    </view>
+    <view class="status-badge {{weekDone ? 'badge-green' : 'badge-gray'}}">
+      <text class="badge-dot {{weekDone ? 'dot-green' : 'dot-gray'}}"></text>
+      <text>周</text>
+    </view>
+    <view class="status-badge {{quarterDone ? 'badge-green' : 'badge-gray'}}">
+      <text class="badge-dot {{quarterDone ? 'dot-green' : 'dot-gray'}}"></text>
+      <text>季</text>
+    </view>
+    <view class="streak-info" wx:if="{{dailyStreak > 0}}">
+      <text class="streak-text">连续 {{dailyStreak}} 天</text>
+    </view>
+  </view>
+
+  <!-- 雷达图区 -->
+  <view class="radar-section card">
+    <view class="radar-header">
+      <text class="radar-title">六维健康度</text>
+      <view class="overall-score-wrap">
+        <text class="overall-score {{overallStatus}}">{{overallHealth}}</text>
+        <text class="overall-label">/ 5.0</text>
+      </view>
+    </view>
+    <view class="radar-canvas-wrap">
+      <canvas type="2d" id="radarChart" class="radar-canvas"
+              bindtap="onRadarTap" bindlongpress="onRadarLongPress"></canvas>
+    </view>
+    <view class="radar-week-label">
+      <text class="text-muted">本周 vs 上周</text>
+      <text class="compare-btn" bindtap="showWeekPicker">切换对比</text>
+    </view>
+  </view>
+
+  <!-- 维度卡片区 -->
+  <view class="dim-cards">
+    <view class="dim-card {{activeDim === item.key ? 'dim-card-active' : ''}}"
+          wx:for="{{dimensionCards}}" wx:key="key"
+          data-key="{{item.key}}" bindtap="onDimTap">
+      <view class="dim-card-left">
+        <text class="dim-icon">{{item.icon}}</text>
+        <view class="dim-info">
+          <text class="dim-name">{{item.name}}</text>
+          <text class="dim-desc text-muted">{{item.desc}}</text>
+        </view>
+      </view>
+      <view class="dim-card-right">
+        <view class="dim-score-wrap">
+          <text class="dim-score">{{item.score}}</text>
+          <text class="dim-score-max text-muted">/5</text>
+        </view>
+        <view class="dim-trend {{item.trendClass}}" wx:if="{{item.trendIcon}}">
+          <text>{{item.trendIcon}}</text>
+        </view>
+      </view>
+      <!-- 进度条 -->
+      <view class="dim-progress-track">
+        <view class="dim-progress-bar {{item.statusClass}}"
+              style="width: {{item.progressPercent}}%"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- P1-5: 五因子摘要 -->
+  <view class="factor-summary card" wx:if="{{hasFactorData}}">
+    <view class="section-title">五因子</view>
+    <view class="factor-row">
+      <text class="factor-label">乘积效能</text>
+      <view class="factor-bar-wrap">
+        <view class="factor-bar" style="width: {{factorProductPercent}}%"></view>
+      </view>
+      <text class="factor-value">{{factorProductPercent}}%</text>
+    </view>
+    <view class="factor-row" wx:if="{{factorBottleneck}}">
+      <text class="factor-label">瓶颈因子</text>
+      <text class="factor-value text-danger">{{factorBottleneck}}</text>
+    </view>
+    <view class="quick-link" bindtap="goToFactors">去评估 →</view>
+  </view>
+
+  <!-- P1-5: 资源盘点摘要 -->
+  <view class="resource-summary card" wx:if="{{hasResourceData}}">
+    <view class="section-title">资源盘点</view>
+    <view class="resource-row">
+      <text class="resource-label">已盘点</text>
+      <text class="resource-value">{{resourceFilled}} / {{resourceTotal}} 类</text>
+    </view>
+    <view class="resource-bar-wrap">
+      <view class="resource-bar" style="width: {{resourceFilled / resourceTotal * 100}}%"></view>
+    </view>
+    <view class="quick-link" bindtap="goToResources">去盘点 →</view>
+  </view>
+
+  <!-- 洞察区 -->
+  <view class="insights-section" wx:if="{{insights.length > 0}}">
+    <view class="section-title">本周洞察</view>
+    <view class="insight-card callout callout-{{item.type}}"
+          wx:for="{{insights}}" wx:key="title">
+      <view class="insight-header">
+        <text class="insight-dot {{item.type}}"></text>
+        <text class="insight-title">{{item.title}}</text>
+      </view>
+      <text class="insight-text">{{item.text}}</text>
+      <view class="insight-footer">
+        <text class="share-btn" data-index="{{index}}" catchtap="onShareInsight">分享</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- F11: 维度关联推荐 -->
+  <view class="correlation-section card" wx:if="{{hasCorrelationData && correlationRec}}">
+    <view class="section-title">个性化改善路径</view>
+    <view class="correlation-text">{{correlationRec}}</view>
+  </view>
+
+  <!-- F3: 趋势折线图 -->
+  <view class="trend-section card" wx:if="{{hasData}}">
+    <view class="trend-header" bindtap="onToggleTrendChart">
+      <text class="section-title">趋势分析</text>
+      <text class="toggle-btn">{{showTrendChart ? '收起' : '展开'}}</text>
+    </view>
+    <view class="trend-canvas-wrap" wx:if="{{showTrendChart}}">
+      <canvas type="2d" id="trendChart" class="trend-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- F3: 打卡热力图 -->
+  <view class="heatmap-section card" wx:if="{{hasData}}">
+    <view class="heatmap-header" bindtap="onToggleHeatMap">
+      <text class="section-title">打卡热力图</text>
+      <text class="toggle-btn">{{showHeatMap ? '收起' : '展开'}}</text>
+    </view>
+    <view class="heatmap-canvas-wrap" wx:if="{{showHeatMap}}">
+      <canvas type="2d" id="heatMap" class="heatmap-canvas"></canvas>
+    </view>
+  </view>
+
+  <!-- AI 深度解读卡片 -->
+  <view class="ai-insight-section" wx:if="{{aiEnabled}}">
+    <view class="section-title">
+      <text>AI 深度解读</text>
+      <text class="ai-source-tag" wx:if="{{aiInsight.source === 'cloud'}}">云端</text>
+      <text class="ai-source-tag ai-source-local" wx:else>本地</text>
+    </view>
+
+    <!-- 加载中骨架 -->
+    <view class="card ai-card" wx:if="{{aiLoading && !aiInsight}}">
+      <view class="ai-loading">
+        <view class="ai-loading-dot"></view>
+        <view class="ai-loading-dot"></view>
+        <view class="ai-loading-dot"></view>
+        <text class="ai-loading-text">正在分析你的系统状态...</text>
+      </view>
+    </view>
+
+    <!-- AI 解读内容 -->
+    <view class="card ai-card" wx:if="{{aiInsight && aiInsight.summary}}">
+      <!-- 综述 -->
+      <view class="ai-summary">{{aiInsight.summary}}</view>
+
+      <!-- 详细分析 -->
+      <view class="ai-detail-item" wx:for="{{aiInsight.details}}" wx:key="title">
+        <view class="ai-detail-header">
+          <text class="ai-detail-dot {{item.type}}"></text>
+          <text class="ai-detail-title">{{item.title}}</text>
+        </view>
+        <text class="ai-detail-text">{{item.text}}</text>
+      </view>
+
+      <!-- 可执行建议 -->
+      <view class="ai-suggestions" wx:if="{{aiInsight.suggestions.length > 0}}">
+        <view class="ai-suggestion-title">建议行动</view>
+        <view class="ai-suggestion-item" wx:for="{{aiInsight.suggestions}}" wx:key="text">
+          <text class="ai-suggestion-priority priority-{{item.priority}}">{{item.priority === 'high' ? '紧急' : item.priority === 'medium' ? '建议' : '可选'}}</text>
+          <text class="ai-suggestion-text">{{item.text}}</text>
+        </view>
+      </view>
+
+      <!-- 引导性问题 -->
+      <view class="ai-followup" wx:if="{{aiInsight.followUp.length > 0}}">
+        <view class="ai-followup-title">思考题</view>
+        <view class="ai-followup-item" wx:for="{{aiInsight.followUp}}" wx:key="*this">
+          <text class="ai-followup-q">Q{{index + 1}}</text>
+          <text class="ai-followup-text">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- 操作栏 -->
+      <view class="ai-actions">
+        <view class="ai-action-btn" bindtap="onRefreshAIInsight">
+          <text>{{aiLoading ? '生成中...' : '刷新解读'}}</text>
+        </view>
+        <view class="ai-action-btn ai-action-primary" bindtap="goToCoach">
+          <text>去对话</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 无数据提示 -->
+    <view class="card ai-card ai-empty" wx:if="{{!aiLoading && !aiInsight}}">
+      <text class="ai-empty-text">完成本周评估后，AI 将为你生成深度解读</text>
+      <view class="ai-action-btn ai-action-primary" bindtap="goToWeeklyAssess">去评估</view>
+    </view>
+  </view>
+
+  <!-- P2-11: 底线告警区 -->
+  <view class="bottomline-alert card" wx:if="{{bottomlineAlerts.length > 0}}">
+    <view class="alert-header">
+      <text class="alert-icon">⚠</text>
+      <text class="alert-title">底线告警</text>
+    </view>
+    <view class="alert-item" wx:for="{{bottomlineAlerts}}" wx:key="key">
+      <text class="alert-dim-icon">{{item.icon}}</text>
+      <view class="alert-content">
+        <text class="alert-dim-name">{{item.name}} 跌破底线</text>
+        <text class="alert-dim-line text-muted">{{item.bottomline}}</text>
+      </view>
+    </view>
+    <view class="alert-action" bindtap="goToInterrupt">
+      <text>前往中断恢复脚本 →</text>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="quick-actions card">
+    <view class="section-title">快捷操作</view>
+    <view class="action-grid">
+      <view class="action-item" bindtap="goToWeeklyAssess">
+        <view class="action-icon action-icon-assess"></view>
+        <text class="action-label">周级自评</text>
+      </view>
+      <view class="action-item" bindtap="goToDailyFeedback">
+        <view class="action-icon action-icon-daily"></view>
+        <text class="action-label">今日记录</text>
+      </view>
+      <view class="action-item" bindtap="goToFactors">
+        <view class="action-icon action-icon-factors"></view>
+        <text class="action-label">五因子</text>
+      </view>
+      <view class="action-item" bindtap="goToResources">
+        <view class="action-icon action-icon-resources"></view>
+        <text class="action-label">资源盘点</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- F10: 洞察分享弹窗 -->
+  <view class="modal-mask" wx:if="{{showShareModal}}" bindtap="onCloseShareModal">
+    <view class="share-modal-content" catchtap>
+      <view class="share-modal-header">
+        <text class="share-modal-title">分享洞察</text>
+        <text class="share-modal-close" bindtap="onCloseShareModal">x</text>
+      </view>
+      <canvas type="2d" id="shareCard" class="share-canvas"></canvas>
+      <view class="share-actions">
+        <view class="share-theme-btn" bindtap="onShareThemeChange">换主题</view>
+        <view class="share-save-btn" bindtap="onShareSave">保存到相册</view>
+      </view>
+    </view>
+  </view>
+
+</view>
+
+<!-- 周对比选择器弹窗 -->
+<view class="modal-mask" wx:if="{{showWeekModal}}" bindtap="hideWeekPicker">
+  <view class="modal-content" catchtap>
+    <view class="modal-header">
+      <text class="modal-title">选择对比周次</text>
+      <text class="modal-close" bindtap="hideWeekPicker">x</text>
+    </view>
+    <scroll-view scroll-y class="modal-body" style="max-height: 500rpx;">
+      <view class="week-option {{compareWeekId === item.id ? 'week-option-active' : ''}}"
+            wx:for="{{weekList}}" wx:key="id"
+            data-id="{{item.id}}" bindtap="selectCompareWeek">
+        <text>{{item.id}}</text>
+        <text class="text-muted">均分 {{item.avg}}</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>

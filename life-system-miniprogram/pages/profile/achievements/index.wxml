@@ -1,0 +1,59 @@
+<!--pages/profile/achievements/index.wxml - 成就徽章-->
+<wxs module="fmt">
+  module.exports.date = function(ts) {
+    if (!ts) return '';
+    var d = getDate(ts);
+    var y = d.getFullYear();
+    var m = (d.getMonth() + 1 < 10 ? '0' : '') + (d.getMonth() + 1);
+    var day = (d.getDate() < 10 ? '0' : '') + d.getDate();
+    return y + '-' + m + '-' + day;
+  };
+</wxs>
+
+<view class="page-container">
+
+  <!-- 进度概览 -->
+  <view class="ach-header card" wx:if="{{display}}">
+    <view class="ach-header-top">
+      <view class="ach-header-icon">🏆</view>
+      <view class="ach-header-info">
+        <view class="ach-header-title">成就徽章</view>
+        <view class="ach-header-sub">已解锁 {{display.unlocked}} / {{display.total}} 个成就</view>
+      </view>
+      <view class="ach-header-percent">{{display.progressPercent}}%</view>
+    </view>
+    <view class="ach-progress-track">
+      <view class="ach-progress-fill" style="width: {{display.progressPercent}}%"></view>
+    </view>
+  </view>
+
+  <!-- 分类汇总 -->
+  <view class="ach-categories" wx:if="{{display}}">
+    <view class="ach-cat-chip {{item.unlocked === item.total ? 'cat-done' : ''}}" wx:for="{{display.categories}}" wx:key="name">
+      <text class="ach-cat-name">{{item.name}}</text>
+      <text class="ach-cat-count">{{item.unlocked}}/{{item.total}}</text>
+    </view>
+  </view>
+
+  <!-- 成就网格 -->
+  <view class="ach-grid" wx:if="{{display}}">
+    <view class="ach-card {{item.unlocked ? 'is-unlocked' : 'is-locked'}}" wx:for="{{display.list}}" wx:key="id">
+      <view class="ach-icon-wrap">
+        <text class="ach-icon">{{item.icon}}</text>
+        <view class="ach-lock" wx:if="{{!item.unlocked}}">
+          <text class="ach-lock-icon">🔒</text>
+        </view>
+      </view>
+      <view class="ach-name">{{item.name}}</view>
+      <view class="ach-desc">{{item.description}}</view>
+      <view class="ach-foot">
+        <block wx:if="{{item.unlocked}}">
+          <text class="ach-foot-date">{{fmt.date(item.unlockedAt)}}</text>
+          <text class="ach-foot-tag">已解锁</text>
+        </block>
+        <text class="ach-foot-locked" wx:else>未解锁</text>
+      </view>
+    </view>
+  </view>
+
+</view>

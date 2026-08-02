@@ -1,0 +1,204 @@
+/* pages/settings/index.wxss - 设置样式 */
+
+/* 列表行：主标题 + 描述 */
+.row-title {
+  display: block;
+  font-size: 28rpx;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.row-desc {
+  display: block;
+  font-size: 22rpx;
+  margin-top: 6rpx;
+  line-height: 1.4;
+}
+
+/* 时间选择器展示 */
+.time-value {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.time-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.time-arrow {
+  font-size: 24rpx;
+}
+
+/* 危险操作区标题 */
+.danger-title {
+  color: var(--danger);
+}
+
+.danger-card {
+  border: 2rpx solid var(--danger-light);
+}
+
+.danger-desc {
+  font-size: 24rpx;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 24rpx;
+}
+
+/* 危险按钮 */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.btn-danger:active {
+  opacity: 0.85;
+}
+
+.btn-danger[disabled] {
+  opacity: 0.5;
+}
+
+/* P2-2: AI 用量统计卡片 */
+.ai-usage-card {
+  border-left: 6rpx solid var(--primary);
+}
+
+.usage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.usage-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.usage-reset {
+  font-size: 24rpx;
+  color: var(--danger);
+  padding: 6rpx 20rpx;
+  border-radius: 16rpx;
+  background: var(--danger-light);
+}
+
+.usage-reset:active {
+  opacity: 0.7;
+}
+
+.usage-grid {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.usage-item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  background: var(--bg);
+  border-radius: 16rpx;
+}
+
+.usage-num {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.usage-label {
+  display: block;
+  font-size: 22rpx;
+  color: var(--muted);
+  margin-top: 8rpx;
+}
+
+.usage-breakdown {
+  border-top: 1rpx solid var(--rule);
+  padding-top: 16rpx;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8rpx 0;
+}
+
+.breakdown-label {
+  font-size: 26rpx;
+  color: var(--muted);
+}
+
+.breakdown-val {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* F1: 订阅消息推送 */
+/* 一键授权全部按钮 */
+.btn-subscribe-all {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 40rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 8rpx;
+}
+
+.btn-subscribe-all:active {
+  opacity: 0.85;
+}
+
+.btn-subscribe-all[disabled] {
+  opacity: 0.5;
+}
+
+/* 订阅列表容器 */
+.subscribe-list {
+  margin-top: 8rpx;
+}
+
+/* 单个订阅项 */
+.subscribe-item {
+  cursor: pointer;
+}
+
+.subscribe-item:active {
+  opacity: 0.7;
+}
+
+/* 订阅状态区（状态文本 + 箭头） */
+.subscribe-status {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.status-text {
+  font-size: 24rpx;
+  font-weight: 500;
+  white-space: nowrap;
+}

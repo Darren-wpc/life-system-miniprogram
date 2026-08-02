@@ -1,0 +1,112 @@
+<!--pages/onboarding/index.wxml - F5 首次使用引导-->
+
+<view class="onboarding">
+
+  <!-- 状态栏占位（自定义导航栏） -->
+  <view class="status-bar-spacer" style="height: {{statusBarHeight}}px;"></view>
+
+  <!-- 导航行：跳过按钮 -->
+  <view class="nav-row">
+    <view class="skip-btn" bindtap="onSkip" wx:if="{{currentStep < 3}}">
+      <text>跳过</text>
+    </view>
+  </view>
+
+  <!-- Swiper 主体 -->
+  <swiper class="onboarding-swiper"
+          current="{{currentStep}}"
+          bindchange="onSwiperChange"
+          duration="300"
+          circular="{{false}}">
+
+    <!-- Step 1: 欢迎 -->
+    <swiper-item>
+      <view class="slide">
+        <view class="illustration-area">
+          <view class="illustration-circle">
+            <text class="illustration-emoji">🌱</text>
+          </view>
+        </view>
+        <view class="slide-content">
+          <text class="slide-title">欢迎使用人生系统</text>
+          <text class="slide-desc">六维健康度 + 五因子 + 资源盘点，帮你看清自己人生的真实状态</text>
+        </view>
+      </view>
+    </swiper-item>
+
+    <!-- Step 2: 六维健康度 -->
+    <swiper-item>
+      <view class="slide slide-list">
+        <view class="slide-content slide-content-top">
+          <text class="slide-title">六维健康度</text>
+          <text class="slide-desc">从六个维度审视你的人生基础</text>
+        </view>
+        <view class="dim-grid">
+          <view class="dim-card-ob" wx:for="{{dimensions}}" wx:key="key">
+            <text class="dim-icon-ob">{{item.icon}}</text>
+            <view class="dim-info-ob">
+              <text class="dim-name-ob">{{item.name}}</text>
+              <text class="dim-desc-ob">{{item.desc}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+    <!-- Step 3: 三层节奏 -->
+    <swiper-item>
+      <view class="slide slide-list">
+        <view class="slide-content slide-content-top">
+          <text class="slide-title">三层节奏</text>
+          <text class="slide-desc">日、周、季三级节奏，让自我观察成为习惯</text>
+        </view>
+        <view class="cadence-list">
+          <view class="cadence-card" wx:for="{{cadence}}" wx:key="title">
+            <view class="cadence-icon-wrap">
+              <text class="cadence-icon">{{item.icon}}</text>
+            </view>
+            <view class="cadence-info">
+              <text class="cadence-title">{{item.title}}</text>
+              <text class="cadence-desc">{{item.desc}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+    <!-- Step 4: 开始使用 -->
+    <swiper-item>
+      <view class="slide">
+        <view class="illustration-area">
+          <view class="illustration-circle illustration-circle-final">
+            <text class="illustration-emoji">🚀</text>
+          </view>
+        </view>
+        <view class="slide-content">
+          <text class="slide-title">准备好开始了吗？</text>
+          <text class="slide-desc">完成第一次周级自评，生成你的健康度雷达图</text>
+        </view>
+      </view>
+    </swiper-item>
+
+  </swiper>
+
+  <!-- 底部控制区 -->
+  <view class="bottom-bar">
+    <!-- 页面指示器 -->
+    <view class="indicators">
+      <view class="indicator {{currentStep === item ? 'indicator-active' : ''}}"
+            wx:for="{{steps}}" wx:key="*this"></view>
+    </view>
+
+    <!-- 按钮区 -->
+    <view class="action-btn-wrap">
+      <view class="btn-next" bindtap="onNext" wx:if="{{currentStep < 3}}">
+        <text>下一步</text>
+      </view>
+      <view class="btn-start" bindtap="onComplete" wx:else>
+        <text>开始使用</text>
+      </view>
+    </view>
+  </view>
+</view>
