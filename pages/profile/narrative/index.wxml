@@ -92,6 +92,23 @@
     </view>
   </block>
 
+  <!-- 更多入口 -->
+  <view class="more-section">
+    <view class="section-title">更多</view>
+    <view class="card settings-list" style="padding: 0; overflow: hidden;">
+      <view class="settings-item" bindtap="goToSettings">
+        <text class="settings-icon">⚙</text>
+        <text class="settings-label">设置</text>
+        <text class="settings-arrow text-muted">›</text>
+      </view>
+      <view class="settings-item" bindtap="goToExport">
+        <text class="settings-icon">📥</text>
+        <text class="settings-label">数据管理</text>
+        <text class="settings-arrow text-muted">›</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 历史记录 -->
   <view class="history-section" wx:if="{{historyList.length > 1}}">
     <view class="history-header" bindtap="toggleHistory">

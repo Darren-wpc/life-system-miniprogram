@@ -35,7 +35,9 @@ Page({
     // 周对比弹窗
     showWeekModal: false,
     compareWeekId: '',
-    weekList: []
+    weekList: [],
+    // P2-11: 底线告警
+    bottomlineAlerts: []
   },
 
   // P2-1: Canvas 2D 非响应式缓存
@@ -150,7 +152,8 @@ Page({
       factorBottleneck,
       hasFactorData,
       resourceFilled,
-      hasResourceData
+      hasResourceData,
+      bottomlineAlerts: this._checkBottomlineAlerts(latestScore)
     });
 
     // 6. 绘制雷达图（延迟确保 canvas 已渲染）
@@ -591,6 +594,46 @@ Page({
   goToResources() {
     wx.navigateTo({
       url: '/pages/assess/resources/index'
+    });
+  },
+
+  /**
+   * P2-11: 底线告警检测 - 检查最新周评分是否跌破已设底线
+   * @param {Object} latestScore 最新周评分
+   * @returns {Array} 告警列表
+   */
+  _checkBottomlineAlerts(latestScore) {
+    if (!latestScore) return [];
+
+    const keys = db.tool.getKeys();
+    const savedBottomline = db.tool.get(keys.TOOL_BOTTOMLINE);
+    if (!savedBottomline) return [];
+
+    const alerts = [];
+    DIM_KEYS.forEach((key) => {
+      const score = latestScore[key];
+      const bottomline = savedBottomline[key];
+
+      if (typeof score === 'number' && score <= 2 && bottomline && bottomline.trim()) {
+        const dim = DIMENSIONS[key];
+        alerts.push({
+          key,
+          name: dim.name,
+          icon: dim.icon,
+          bottomline: bottomline.trim()
+        });
+      }
+    });
+
+    return alerts;
+  },
+
+  /**
+   * P2-11: 跳转到中断恢复脚本
+   */
+  goToInterrupt() {
+    wx.navigateTo({
+      url: '/pages/toolkit/interrupt/index'
     });
   }
 });

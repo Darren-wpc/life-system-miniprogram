@@ -356,6 +356,85 @@
   line-height: 1.7;
 }
 
+/* ===== P2-11: 底线告警 ===== */
+.bottomline-alert {
+  margin: 16rpx 32rpx;
+  padding: 28rpx 32rpx;
+  background: var(--danger-light, #fef2f2);
+  border-left: 6rpx solid var(--danger, #e11d48);
+}
+
+.alert-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.alert-icon {
+  font-size: 32rpx;
+  color: var(--danger, #e11d48);
+}
+
+.alert-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--danger, #e11d48);
+}
+
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid rgba(225, 29, 72, 0.1);
+}
+
+.alert-item:last-of-type {
+  border-bottom: none;
+}
+
+.alert-dim-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.alert-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  flex: 1;
+}
+
+.alert-dim-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--ink, #1e293b);
+}
+
+.alert-dim-line {
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.alert-action {
+  margin-top: 20rpx;
+  padding: 16rpx 24rpx;
+  background: var(--danger, #e11d48);
+  border-radius: 12rpx;
+  text-align: center;
+}
+
+.alert-action text {
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.alert-action:active {
+  opacity: 0.85;
+}
+
 /* ===== 快捷操作 ===== */
 .quick-actions {
   margin: 16rpx 32rpx 32rpx;

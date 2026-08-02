@@ -156,5 +156,23 @@ Page({
    */
   toggleHistory() {
     this.setData({ historyExpanded: !this.data.historyExpanded });
+  },
+
+  /**
+   * 跳转到设置页
+   */
+  goToSettings() {
+    wx.navigateTo({
+      url: '/pages/settings/index'
+    });
+  },
+
+  /**
+   * 跳转到数据管理页
+   */
+  goToExport() {
+    wx.navigateTo({
+      url: '/pages/export/index'
+    });
   }
 });

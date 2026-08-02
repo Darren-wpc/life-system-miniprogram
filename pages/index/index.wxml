@@ -150,6 +150,24 @@
     </view>
   </view>
 
+  <!-- P2-11: 底线告警区 -->
+  <view class="bottomline-alert card" wx:if="{{bottomlineAlerts.length > 0}}">
+    <view class="alert-header">
+      <text class="alert-icon">⚠</text>
+      <text class="alert-title">底线告警</text>
+    </view>
+    <view class="alert-item" wx:for="{{bottomlineAlerts}}" wx:key="key">
+      <text class="alert-dim-icon">{{item.icon}}</text>
+      <view class="alert-content">
+        <text class="alert-dim-name">{{item.name}} 跌破底线</text>
+        <text class="alert-dim-line text-muted">{{item.bottomline}}</text>
+      </view>
+    </view>
+    <view class="alert-action" bindtap="goToInterrupt">
+      <text>前往中断恢复脚本 →</text>
+    </view>
+  </view>
+
   <!-- 快捷入口 -->
   <view class="quick-actions card">
     <view class="section-title">快捷操作</view>
