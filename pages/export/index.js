@@ -1,6 +1,7 @@
 // pages/export/index.js - 数据管理
 
-var db = require('../../utils/db');
+const db = require('../../utils/db');
+const ai = require('../../utils/ai');
 
 Page({
   data: {
@@ -13,15 +14,15 @@ Page({
     lastExportTime: ''
   },
 
-  onLoad: function () {
+  onLoad() {
     this._loadCounts();
   },
 
-  onShow: function () {
+  onShow() {
     this._loadCounts();
   },
 
-  onPullDownRefresh: function () {
+  onPullDownRefresh() {
     this._loadCounts();
     wx.stopPullDownRefresh();
   },
@@ -29,38 +30,42 @@ Page({
   /**
    * 统计各类数据记录数与存储占用
    */
-  _loadCounts: function () {
-    var weekly = db.weekly.getAll();
-    var factors = db.factors.getAll();
-    var daily = db.daily.getDays(999);
-    var quarterly = db.quarterly.getAll();
-    var narrative = db.narrative.getAll();
-    var pivot = db.pivot.getAll();
-    var toolCount = this._countTools();
+  _loadCounts() {
+    const weekly = db.weekly.getAll();
+    const factors = db.factors.getAll();
+    const daily = db.daily.getDays(999);
+    const quarterly = db.quarterly.getAll();
+    const narrative = db.narrative.getAll();
+    const pivot = db.pivot.getAll();
+    const toolCount = this._countTools();
+    const transformCount = db.transform.getAll().length;
+    const aiChatCount = ai.getChatHistory().length;
 
-    var categories = [
+    const categories = [
       { key: 'weekly', name: '六维周评', count: weekly.length, desc: '每周一次的健康度自评' },
       { key: 'factors', name: '五因子评分', count: factors.length, desc: '标准 / 行动 / 资源 / 反馈 / 不确定性' },
       { key: 'daily', name: '日级反馈', count: daily.length, desc: '每日能量与情绪记录' },
       { key: 'quarterly', name: '季级复盘', count: quarterly.length, desc: '每季度回顾与下季计划' },
       { key: 'narrative', name: '叙事记录', count: narrative.length, desc: '叙事一致性三问' },
       { key: 'pivot', name: '转向判据', count: pivot.length, desc: '转向信号判断记录' },
-      { key: 'tool', name: '工具箱数据', count: toolCount, desc: '不做清单 / 底线 / 汇率等 6 类工具' }
+      { key: 'tool', name: '工具箱数据', count: toolCount, desc: '不做清单 / 底线 / 汇率等 6 类工具' },
+      { key: 'transform', name: '资源转化', count: transformCount, desc: '资源间转化追踪记录' },
+      { key: 'ai', name: 'AI 对话', count: aiChatCount, desc: 'AI 教练对话历史与洞察缓存' }
     ];
 
-    var total = 0;
-    for (var i = 0; i < categories.length; i++) {
-      total += categories[i].count;
-    }
+    let total = 0;
+    categories.forEach(cat => {
+      total += cat.count;
+    });
 
     // 存储占用（KB）
-    var storageInfo = this._getStorageInfo();
-    var used = storageInfo.currentSize || 0;
-    var limit = storageInfo.limitSize || 10240;
-    var percent = limit > 0 ? Math.round((used / limit) * 100) : 0;
+    const storageInfo = this._getStorageInfo();
+    const used = storageInfo.currentSize || 0;
+    const limit = storageInfo.limitSize || 10240;
+    const percent = limit > 0 ? Math.round((used / limit) * 100) : 0;
 
     this.setData({
-      categories: categories,
+      categories,
       totalRecords: total,
       storageUsed: String(used),
       storageLimit: String(limit),
@@ -71,9 +76,9 @@ Page({
   /**
    * 统计工具箱数据条数（6 类工具汇总）
    */
-  _countTools: function () {
-    var keys = db.tool.getKeys();
-    var total = 0;
+  _countTools() {
+    const keys = db.tool.getKeys();
+    let total = 0;
 
     // 列表类：notodo / exchange / uncontrollable
     total += this._countItems(db.tool.get(keys.TOOL_NOTODO));
@@ -81,7 +86,7 @@ Page({
     total += this._countItems(db.tool.get(keys.TOOL_UNCONTROLLABLE));
 
     // 脚本类：restart
-    var restart = db.tool.get(keys.TOOL_RESTART);
+    const restart = db.tool.get(keys.TOOL_RESTART);
     if (restart && restart.scripts && Array.isArray(restart.scripts)) {
       total += restart.scripts.length;
     }
@@ -93,7 +98,7 @@ Page({
     return total;
   },
 
-  _countItems: function (data) {
+  _countItems(data) {
     if (data && data.items && Array.isArray(data.items)) {
       return data.items.length;
     }
@@ -103,13 +108,13 @@ Page({
   /**
    * 判断表单类工具是否有实质内容
    */
-  _hasFormContent: function (obj) {
+  _hasFormContent(obj) {
     if (!obj || typeof obj !== 'object') return false;
-    var propNames = Object.keys(obj);
-    for (var i = 0; i < propNames.length; i++) {
-      var k = propNames[i];
+    const propNames = Object.keys(obj);
+    for (let i = 0; i < propNames.length; i++) {
+      const k = propNames[i];
       if (k === 'updatedAt') continue;
-      var v = obj[k];
+      const v = obj[k];
       if (v !== undefined && v !== null && v !== '') return true;
     }
     return false;
@@ -118,7 +123,7 @@ Page({
   /**
    * 安全读取存储信息
    */
-  _getStorageInfo: function () {
+  _getStorageInfo() {
     try {
       return wx.getStorageInfoSync();
     } catch (e) {
@@ -130,23 +135,22 @@ Page({
   /**
    * 导出全部数据为 JSON 到剪贴板
    */
-  onExport: function () {
+  onExport() {
     if (this.data.exporting) return;
     this.setData({ exporting: true });
-    var that = this;
     try {
-      var data = this._buildExportData();
-      var json = JSON.stringify(data);
+      const data = this._buildExportData();
+      const json = JSON.stringify(data);
 
       wx.setClipboardData({
         data: json,
-        success: function () {
-          var now = that._formatTime(Date.now());
-          that.setData({ exporting: false, lastExportTime: now });
+        success: () => {
+          const now = this._formatTime(Date.now());
+          this.setData({ exporting: false, lastExportTime: now });
           wx.showToast({ title: '已复制到剪贴板', icon: 'success' });
         },
-        fail: function () {
-          that.setData({ exporting: false });
+        fail: () => {
+          this.setData({ exporting: false });
           wx.showToast({ title: '导出失败', icon: 'none' });
         }
       });
@@ -159,11 +163,12 @@ Page({
 
   /**
    * 组装导出数据对象
+   * P1-10: 补充导出资源转化记录
    */
-  _buildExportData: function () {
-    var keys = db.tool.getKeys();
+  _buildExportData() {
+    const keys = db.tool.getKeys();
     return {
-      appVersion: 'v1.2.0',
+      appVersion: 'v2.0.0',
       schemaVersion: 2,
       exportTime: this._formatTime(Date.now()),
       weekly: db.weekly.getAll(),
@@ -172,6 +177,7 @@ Page({
       quarterly: db.quarterly.getAll(),
       narrative: db.narrative.getAll(),
       pivot: db.pivot.getAll(),
+      transforms: db.transform.getAll(),
       tools: {
         notodo: db.tool.get(keys.TOOL_NOTODO),
         bottomline: db.tool.get(keys.TOOL_BOTTOMLINE),
@@ -180,21 +186,26 @@ Page({
         uncontrollable: db.tool.get(keys.TOOL_UNCONTROLLABLE),
         restart: db.tool.get(keys.TOOL_RESTART)
       },
-      settings: db.settings.get()
+      settings: db.settings.get(),
+      ai: {
+        settings: ai.getSettings(),
+        insightCache: ai.getCachedInsight(),
+        chatHistory: ai.getChatHistory()
+      }
     };
   },
 
   /**
    * 格式化时间戳为可读日期时间
    */
-  _formatTime: function (ts) {
-    var d = new Date(ts);
-    var y = d.getFullYear();
-    var m = d.getMonth() + 1;
-    var day = d.getDate();
-    var hh = d.getHours();
-    var mm = d.getMinutes();
-    var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+  _formatTime(ts) {
+    const d = new Date(ts);
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    const day = d.getDate();
+    const hh = d.getHours();
+    const mm = d.getMinutes();
+    const p = (n) => (n < 10 ? '0' + n : '' + n);
     return y + '-' + p(m) + '-' + p(day) + ' ' + p(hh) + ':' + p(mm);
   }
 });

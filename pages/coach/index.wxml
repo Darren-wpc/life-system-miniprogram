@@ -1,0 +1,107 @@
+<!-- pages/coach/index.wxml - AI 教练对话页 -->
+<view class="coach-page">
+  <!-- 顶部栏 -->
+  <view class="coach-header">
+    <view class="header-info">
+      <text class="header-title">AI 教练</text>
+      <text class="header-subtitle">基于人生系统框架的个性化指导</text>
+    </view>
+    <view
+      class="clear-btn"
+      wx:if="{{aiEnabled && hasData && messages.length > 0}}"
+      bindtap="clearChat"
+    >
+      清空对话
+    </view>
+  </view>
+
+  <!-- AI 功能未开启 -->
+  <view class="state-wrap" wx:if="{{!aiEnabled}}">
+    <view class="state-icon">⚙️</view>
+    <view class="state-title">AI 功能未开启</view>
+    <view class="state-desc">请在设置中开启 AI 功能后使用教练对话</view>
+    <navigator class="state-action" url="/pages/settings/index" open-type="navigate">前往设置</navigator>
+  </view>
+
+  <!-- 无周评数据 -->
+  <view class="state-wrap" wx:elif="{{!hasData}}">
+    <view class="state-icon">📋</view>
+    <view class="state-title">先完成本周评估</view>
+    <view class="state-desc">AI 教练需要基于你的六维自评数据提供个性化建议，请先完成本周评估再来对话。</view>
+    <view class="state-action" bindtap="goToWeekly">去评估</view>
+  </view>
+
+  <!-- 对话界面 -->
+  <block wx:else>
+    <!-- 对话滚动区 -->
+    <scroll-view
+      class="chat-scroll"
+      scroll-y
+      scroll-top="{{scrollTop}}"
+      scroll-with-animation="{{true}}"
+    >
+      <view class="chat-content">
+        <!-- 欢迎卡片 -->
+        <view class="welcome-card" wx:if="{{messages.length === 0}}">
+          <view class="welcome-icon">🧑‍🏫</view>
+          <view class="welcome-title">你好，我是你的 AI 教练</view>
+          <view class="welcome-desc">我可以帮你解读评估结果、梳理压力来源、设定目标、找到行动方向。随时和我聊聊吧。</view>
+        </view>
+
+        <!-- 消息列表 -->
+        <view
+          wx:for="{{messages}}"
+          wx:key="index"
+          class="msg-row {{item.role === 'user' ? 'msg-row-right' : 'msg-row-left'}}"
+        >
+          <view class="msg-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
+            <text user-select="{{true}}" decode="{{true}}">{{item.content}}</text>
+          </view>
+        </view>
+
+        <!-- AI 思考中加载指示器 -->
+        <view class="msg-row msg-row-left" wx:if="{{sending}}">
+          <view class="msg-bubble bubble-ai loading-bubble">
+            <view class="loading-dot"></view>
+            <view class="loading-dot"></view>
+            <view class="loading-dot"></view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 快捷建议（仅对话为空时显示） -->
+    <view class="suggestions" wx:if="{{messages.length === 0}}">
+      <view
+        class="suggestion-chip"
+        wx:for="{{suggestions}}"
+        wx:key="*this"
+        data-text="{{item}}"
+        bindtap="useSuggestion"
+      >
+        {{item}}
+      </view>
+    </view>
+
+    <!-- 输入区域 -->
+    <view class="input-area">
+      <input
+        class="chat-input"
+        value="{{inputText}}"
+        bindinput="onInput"
+        placeholder="输入你的问题..."
+        placeholder-class="input-placeholder"
+        confirm-type="send"
+        bindconfirm="sendMessage"
+        cursor-spacing="20"
+        adjust-position="{{true}}"
+      />
+      <view
+        class="send-btn {{(!canSend || sending) ? 'send-disabled' : ''}}"
+        bindtap="sendMessage"
+      >
+        发送
+      </view>
+    </view>
+  </block>
+</view>

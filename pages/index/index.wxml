@@ -150,6 +150,74 @@
     </view>
   </view>
 
+  <!-- AI 深度解读卡片 -->
+  <view class="ai-insight-section" wx:if="{{aiEnabled}}">
+    <view class="section-title">
+      <text>AI 深度解读</text>
+      <text class="ai-source-tag" wx:if="{{aiInsight.source === 'cloud'}}">云端</text>
+      <text class="ai-source-tag ai-source-local" wx:else>本地</text>
+    </view>
+
+    <!-- 加载中骨架 -->
+    <view class="card ai-card" wx:if="{{aiLoading && !aiInsight}}">
+      <view class="ai-loading">
+        <view class="ai-loading-dot"></view>
+        <view class="ai-loading-dot"></view>
+        <view class="ai-loading-dot"></view>
+        <text class="ai-loading-text">正在分析你的系统状态...</text>
+      </view>
+    </view>
+
+    <!-- AI 解读内容 -->
+    <view class="card ai-card" wx:if="{{aiInsight && aiInsight.summary}}">
+      <!-- 综述 -->
+      <view class="ai-summary">{{aiInsight.summary}}</view>
+
+      <!-- 详细分析 -->
+      <view class="ai-detail-item" wx:for="{{aiInsight.details}}" wx:key="title">
+        <view class="ai-detail-header">
+          <text class="ai-detail-dot {{item.type}}"></text>
+          <text class="ai-detail-title">{{item.title}}</text>
+        </view>
+        <text class="ai-detail-text">{{item.text}}</text>
+      </view>
+
+      <!-- 可执行建议 -->
+      <view class="ai-suggestions" wx:if="{{aiInsight.suggestions.length > 0}}">
+        <view class="ai-suggestion-title">建议行动</view>
+        <view class="ai-suggestion-item" wx:for="{{aiInsight.suggestions}}" wx:key="text">
+          <text class="ai-suggestion-priority priority-{{item.priority}}">{{item.priority === 'high' ? '紧急' : item.priority === 'medium' ? '建议' : '可选'}}</text>
+          <text class="ai-suggestion-text">{{item.text}}</text>
+        </view>
+      </view>
+
+      <!-- 引导性问题 -->
+      <view class="ai-followup" wx:if="{{aiInsight.followUp.length > 0}}">
+        <view class="ai-followup-title">思考题</view>
+        <view class="ai-followup-item" wx:for="{{aiInsight.followUp}}" wx:key="*this">
+          <text class="ai-followup-q">Q{{index + 1}}</text>
+          <text class="ai-followup-text">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- 操作栏 -->
+      <view class="ai-actions">
+        <view class="ai-action-btn" bindtap="onRefreshAIInsight">
+          <text>{{aiLoading ? '生成中...' : '刷新解读'}}</text>
+        </view>
+        <view class="ai-action-btn ai-action-primary" bindtap="goToCoach">
+          <text>去对话</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 无数据提示 -->
+    <view class="card ai-card ai-empty" wx:if="{{!aiLoading && !aiInsight}}">
+      <text class="ai-empty-text">完成本周评估后，AI 将为你生成深度解读</text>
+      <view class="ai-action-btn ai-action-primary" bindtap="goToWeeklyAssess">去评估</view>
+    </view>
+  </view>
+
   <!-- P2-11: 底线告警区 -->
   <view class="bottomline-alert card" wx:if="{{bottomlineAlerts.length > 0}}">
     <view class="alert-header">

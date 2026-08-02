@@ -18,6 +18,29 @@
     </view>
   </view>
 
+  <!-- AI 设置 -->
+  <view class="section-title">AI 智能教练</view>
+  <view class="card">
+    <view class="list-item">
+      <view class="item-label">
+        <text class="row-title">AI 深度解读</text>
+        <text class="row-desc text-muted">基于人生框架的智能分析与建议</text>
+      </view>
+      <switch checked="{{aiEnabled}}" bindchange="onAIToggle" color="#0d9488" />
+    </view>
+    <view class="list-item" wx:if="{{aiEnabled}}">
+      <view class="item-label">
+        <text class="row-title">云端 AI 模式</text>
+        <text class="row-desc text-muted">开启后使用云端大模型，关闭则使用本地引擎</text>
+      </view>
+      <switch checked="{{cloudEnabled}}" bindchange="onCloudToggle" color="#0d9488" />
+    </view>
+  </view>
+
+  <view class="callout callout-info" wx:if="{{aiEnabled}}">
+    <text>AI 教练基于你的六维健康度和五因子数据，提供个性化深度解读。{{cloudEnabled ? '当前使用云端大模型，回答更精准。' : '当前使用本地引擎，开启云端模式可获得更深度分析。'}}</text>
+  </view>
+
   <!-- 关于 -->
   <view class="section-title">关于</view>
   <view class="card">
@@ -43,7 +66,7 @@
   <view class="section-title danger-title">数据管理</view>
   <view class="card danger-card">
     <view class="danger-desc">
-      <text>清除全部数据将删除所有评估、反馈、工具箱与叙事记录，且不可恢复。建议先导出备份。</text>
+      <text>清除全部数据将删除所有评估、反馈、工具箱、叙事与AI缓存记录，且不可恢复。建议先导出备份。</text>
     </view>
     <button class="btn-danger" bindtap="onClearData" disabled="{{clearing}}">
       {{clearing ? '清除中...' : '清除全部数据'}}

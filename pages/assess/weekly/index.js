@@ -1,6 +1,7 @@
 // pages/assess/weekly/index.js
 const db = require('../../../utils/db');
 const constants = require('../../../utils/constants');
+const ai = require('../../../utils/ai');
 
 Page({
   data: {
@@ -10,7 +11,8 @@ Page({
     energyText: '',
     drainText: '',
     saving: false,
-    weekLabel: ''
+    weekLabel: '',
+    aiTriggering: false
   },
 
   // P1-4: 数据加载统一放 onShow
@@ -91,12 +93,46 @@ Page({
     try {
       db.weekly.save(data);
       wx.showToast({ title: '保存成功', icon: 'success' });
+
+      // 保存后触发 AI 深度解读
+      this._triggerAIInsight();
     } catch (err) {
       console.error('weekly save error:', err);
       wx.showToast({ title: '保存失败', icon: 'none' });
     } finally {
       this.setData({ saving: false });
     }
+  },
+
+  /**
+   * 保存后触发 AI 深度解读生成
+   */
+  _triggerAIInsight() {
+    if (!ai.isEnabled()) return;
+
+    this.setData({ aiTriggering: true });
+
+    // 强制重新生成（因为刚保存了新数据）
+    ai.generateWeeklyInsight(true).then((insight) => {
+      this.setData({ aiTriggering: false });
+
+      if (insight && insight.summary) {
+        // 弹窗提示用户查看 AI 解读
+        wx.showModal({
+          title: 'AI 深度解读已生成',
+          content: '基于本周评估数据，AI 已为你生成深度解读。是否立即查看？',
+          confirmText: '去查看',
+          cancelText: '稍后',
+          success: (res) => {
+            if (res.confirm) {
+              wx.switchTab({ url: '/pages/index/index' });
+            }
+          }
+        });
+      }
+    }).catch(() => {
+      this.setData({ aiTriggering: false });
+    });
   },
 
   goFactors() {

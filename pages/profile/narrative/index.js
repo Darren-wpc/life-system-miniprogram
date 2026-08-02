@@ -159,6 +159,15 @@ Page({
   },
 
   /**
+   * 跳转到 AI 教练页
+   */
+  goToCoach() {
+    wx.navigateTo({
+      url: '/pages/coach/index'
+    });
+  },
+
+  /**
    * 跳转到设置页
    */
   goToSettings() {

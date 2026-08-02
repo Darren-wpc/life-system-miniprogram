@@ -2,8 +2,9 @@
 
 const db = require('../../utils/db');
 const diagnosis = require('../../utils/diagnosis');
-const { DIMENSIONS, DIM_KEYS, FACTORS, FACTOR_KEYS, RESOURCE_TYPES, COLORS } = require('../../utils/constants');
+const { DIMENSIONS, DIM_KEYS, FACTORS, RESOURCE_TYPES, COLORS } = require('../../utils/constants');
 const { haptic } = require('../../utils/common');
+const ai = require('../../utils/ai');
 
 Page({
   data: {
@@ -37,7 +38,11 @@ Page({
     compareWeekId: '',
     weekList: [],
     // P2-11: 底线告警
-    bottomlineAlerts: []
+    bottomlineAlerts: [],
+    // AI 深度解读
+    aiInsight: null,
+    aiLoading: false,
+    aiEnabled: false
   },
 
   // P2-1: Canvas 2D 非响应式缓存
@@ -160,6 +165,9 @@ Page({
     wx.nextTick(() => {
       this._drawRadarChart(latestScore, previousScore);
     });
+
+    // 7. 加载 AI 深度解读
+    this._loadAIInsight();
   },
 
   /**
@@ -634,6 +642,64 @@ Page({
   goToInterrupt() {
     wx.navigateTo({
       url: '/pages/toolkit/interrupt/index'
+    });
+  },
+
+  /**
+   * 加载 AI 深度解读
+   */
+  _loadAIInsight() {
+    const aiEnabled = ai.isEnabled();
+    this.setData({ aiEnabled });
+
+    if (!aiEnabled) return;
+
+    // 先尝试读取缓存
+    const cached = ai.getCachedInsight();
+    if (cached && cached.summary) {
+      this.setData({ aiInsight: cached });
+    }
+
+    // 异步生成新的洞察（本周未生成过时才会重新生成）
+    this.setData({ aiLoading: true });
+    ai.generateWeeklyInsight().then((insight) => {
+      if (insight && insight.summary) {
+        this.setData({ aiInsight: insight, aiLoading: false });
+      } else {
+        this.setData({ aiLoading: false });
+      }
+    }).catch(() => {
+      this.setData({ aiLoading: false });
+    });
+  },
+
+  /**
+   * 刷新 AI 洞察（强制重新生成）
+   */
+  onRefreshAIInsight() {
+    haptic();
+    if (this.data.aiLoading) return;
+    this.setData({ aiLoading: true });
+
+    ai.generateWeeklyInsight(true).then((insight) => {
+      if (insight && insight.summary) {
+        this.setData({ aiInsight: insight, aiLoading: false });
+        wx.showToast({ title: '已更新', icon: 'success' });
+      } else {
+        this.setData({ aiLoading: false });
+      }
+    }).catch(() => {
+      this.setData({ aiLoading: false });
+      wx.showToast({ title: '生成失败', icon: 'none' });
+    });
+  },
+
+  /**
+   * 跳转到 AI 对话页
+   */
+  goToCoach() {
+    wx.navigateTo({
+      url: '/pages/coach/index'
     });
   }
 });

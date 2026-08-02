@@ -1,0 +1,12 @@
+{
+  "name": "aiCoach",
+  "version": "1.0.0",
+  "description": "生活系统小程序 - AI 教练云函数，基于生活框架提供周度洞察、对话辅导与目标引导",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "axios": "^1.6.8"
+  },
+  "author": "life-system-miniprogram",
+  "license": "MIT"
+}

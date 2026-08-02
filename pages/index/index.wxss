@@ -440,6 +440,246 @@
   margin: 16rpx 32rpx 32rpx;
 }
 
+/* ===== AI 深度解读卡片 ===== */
+.ai-insight-section {
+  padding: 16rpx 32rpx 0;
+  margin-top: 16rpx;
+}
+
+.ai-insight-section .section-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.ai-source-tag {
+  font-size: 18rpx;
+  font-weight: 600;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.ai-source-local {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.ai-card {
+  padding: 32rpx;
+  margin-bottom: 16rpx;
+}
+
+/* 加载动画 */
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 24rpx 0;
+}
+
+.ai-loading-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: ai-dot-pulse 1.4s ease-in-out infinite;
+}
+
+.ai-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.ai-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes ai-dot-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+.ai-loading-text {
+  font-size: 26rpx;
+  color: var(--muted);
+  margin-left: 8rpx;
+}
+
+/* AI 综述 */
+.ai-summary {
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: var(--ink);
+  margin-bottom: 24rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid var(--rule);
+}
+
+/* 详细分析 */
+.ai-detail-item {
+  margin-bottom: 20rpx;
+}
+
+.ai-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.ai-detail-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+}
+
+.ai-detail-dot.danger { background: var(--danger); }
+.ai-detail-dot.warning { background: var(--accent); }
+.ai-detail-dot.info { background: var(--primary); }
+.ai-detail-dot.success { background: var(--success); }
+
+.ai-detail-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ai-detail-text {
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: var(--muted);
+  display: block;
+  padding-left: 24rpx;
+}
+
+/* 建议行动 */
+.ai-suggestions {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid var(--rule);
+}
+
+.ai-suggestion-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 16rpx;
+}
+
+.ai-suggestion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.ai-suggestion-priority {
+  font-size: 20rpx;
+  font-weight: 600;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.priority-high {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.priority-medium {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.priority-low {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.ai-suggestion-text {
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: var(--ink);
+  flex: 1;
+}
+
+/* 引导性问题 */
+.ai-followup {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid var(--rule);
+}
+
+.ai-followup-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 16rpx;
+}
+
+.ai-followup-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.ai-followup-q {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.ai-followup-text {
+  font-size: 24rpx;
+  line-height: 1.6;
+  color: var(--muted);
+  flex: 1;
+}
+
+/* 操作栏 */
+.ai-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid var(--rule);
+}
+
+.ai-action-btn {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  background: var(--bg);
+  color: var(--muted);
+}
+
+.ai-action-btn:active {
+  opacity: 0.8;
+}
+
+.ai-action-primary {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* 无数据提示 */
+.ai-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+  padding: 48rpx 32rpx;
+}
+
+.ai-empty-text {
+  font-size: 26rpx;
+  color: var(--muted);
+  text-align: center;
+}
+
 .action-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

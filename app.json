@@ -16,7 +16,8 @@
     "pages/profile/narrative/index",
     "pages/profile/pivot/index",
     "pages/settings/index",
-    "pages/export/index"
+    "pages/export/index",
+    "pages/coach/index"
   ],
   "window": {
     "navigationBarBackgroundColor": "#0d9488",
